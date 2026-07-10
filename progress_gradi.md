@@ -102,14 +102,38 @@ same technologies. No images / no theme for now (placeholders); art comes later.
 - [x] Server: room-code, room-registry, BoardedRoom (lobby protocol per wog-room.md)
 - [x] Server: match driver (single MOVE channel → engine applyMove; afterEngineStep drains reveals + re-projects; reconnect RECONNECT_OK; ≥2-drop abort)
 - [x] Server: tests green (13: handoff+session+room-code); manual boot check OK
-- [ ] Client: scaffolding (vite, router, entry/auth, net/room, active-room, resume)
-- [ ] Client: LandingScreen (create/join/resume)
-- [ ] Client: RoomScreen (acquisition state machine) + RoomLobby
-- [ ] Client: GameView (crew display, event draft, boarding flow, treasure hand, curse/talisman
-      prompts, end screen) — placeholder styling only
-- [ ] Typecheck + build green at root (`pnpm build`, `pnpm typecheck`)
-- [ ] Dockerfile + CI (copy Pantheons pattern)
-- [ ] Final: update gameplay.md if any observable-behavior deviation (per its own header rule)
+- [x] Client: scaffolding (vite+proxy, router, entry/auth incl. dev-login, net/room,
+      active-room baton, resume record)
+- [x] Client: LandingScreen (create/join/resume)
+- [x] Client: RoomScreen (acquisition state machine) + RoomLobby
+- [x] Client: GameView (ships grid, event draft, boarding/curse/talisman prompts driven by
+      proj.pending, treasure hand, log, longue-vue reveal modal, game-over overlay) —
+      placeholder styling only (index.css is the single theming surface)
+- [x] Typecheck + build green at root (`pnpm build`, `pnpm typecheck`)
+- [x] E2E smoke over real Colyseus transport: create → probe → join-by-code → lobby shrink
+      to 2 → ready → start → full 16-round bot match → winner; wire-level check confirms
+      opponents' `treasures` never serialized (script kept at scratchpad only, rewrite if needed)
+- [x] Dockerfile + .dockerignore + CI (Pantheons pattern; homelab retarget job intentionally
+      omitted until infra/boarded exists in Libertygos/homelab — note in ci.yml)
+- [x] README.md (layout + local dev instructions)
+- [x] gameplay.md §13 added: implementation rulings (contre-abordage windows, 2v1 steals,
+      pairing chooser, disconnect auto-resolution, curse-window privacy) per its header rule
+
+## Next steps (future sessions)
+
+1. **Theme/art pass** — user said images/theme come later. All styling is in
+   `client/src/index.css` (semantic classes); cards are text tiles in GameView
+   (`eventLabel`/`treasureLabel`) — swap for a CardImage component when assets land.
+2. **More tests**: server room integration tests (lobby protocol, reconnect, abort) — Pantheons
+   has none either, but wog-room.md §8.9 suggests them; engine edge cases (Tempête mid-window
+   re-ordering, Bateau Fantôme stacking 3 steals, Singe Doré bonus double interrogation).
+3. **UX niceties**: clock/timeouts per seat (WoG has CLOCK_START/EXPIRY — not implemented),
+   boarding totals display before resolution, richer log (i18n keys instead of prebaked FR
+   strings in engine log — engine currently logs French text directly).
+4. **Deploy**: add infra/boarded kustomization to Libertygos/homelab + retarget CI job +
+   HOMELAB_DEPLOY_TOKEN secret; platform side: gosgames launch deep-link + handoff mint for
+   aud "boarded" (PLATFORM_LAUNCH_URL already points to /api/launch/boarded).
+5. **Balance/playtest**: bot matches end in ~12–20 rounds at 2–4p; check pacing with humans.
 
 ## Engine design notes (for whoever continues)
 
@@ -137,3 +161,8 @@ same technologies. No images / no theme for now (placeholders); art comes later.
 
 - **2026-07-10 (session 1)**: Explored refs. Pantheons layout chosen as template. Wrote plan.
 - **2026-07-10 (session 1)**: Engine complete + 13 tests green (incl. full-match smoke 2/3/4p).
+- **2026-07-10 (session 1)**: Server (BoardedRoom + auth + bootstrap) done, tests green.
+- **2026-07-10 (session 1)**: Client done (landing/lobby/gameroom), root build green, E2E
+  smoke passed over real WS transport, Dockerfile+CI+README, gameplay.md §13 rulings.
+  **MVP COMPLETE** — everything requested (room + landing + gameroom, same tech) is
+  implemented and pushed. Remaining work is polish (see Next steps).
