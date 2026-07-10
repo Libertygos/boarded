@@ -237,7 +237,33 @@ Tourbillon note: fires at the reveal window each round (not deck exhaustion). To
 
 ---
 
-## 13. Open items (design phase)
+## 13. Implementation rulings (V1 engine — observable behavior)
+
+Points the rules text leaves open, ruled as follows by the V1 engine (`packages/engine`).
+Changing any of these requires a design sign-off + engine/test update in the same commit.
+
+- **Contre-Abordage counter-boarding does NOT open Kraken / Île Brumeuse windows.** It is a
+  curse-level effect: single-value profile, no bonus, straight to combat (tie → Master).
+- **2v1 boarding steals** (one 2v2 defender escaped via Île Brumeuse): if the 2-player side
+  wins, *each* winner steals from the single loser ("different losing player" is impossible
+  and is waived); if the solo side wins, the winner steals from **one** loser of the winning
+  side's choice.
+- **2v2 steal pairing chooser** = the winning-side seat closest to the Master in clockwise
+  order (the card text says "the winning side chooses" without naming who clicks).
+- **Kraken window** opens for every seat except the boarding initiator, in Master order.
+- **A played curse keeps its owner at the head of the trigger window queue** (they may play
+  their second copy); passing or escaping consumes the slot.
+- **Disconnected-seat auto-resolution** (server keeps play unblocked): event pick = first
+  recruitment, else first raid, else first boarding auto-targeting the next seat clockwise;
+  optional curse windows auto-pass; Master tie auto-ruling = attackers win; recruit choices =
+  first N; Singe Doré / Longue-vue skipped when the beneficiary is disconnected.
+- **Curse-window privacy**: other seats see a generic non-attributed wait while a curse
+  window is open (naming the waiting seat would leak curse ownership). Timing inference
+  remains possible; accepted for V1.
+
+---
+
+## 14. Open items (design phase)
 
 - Icon/asset renames to match Sabres/Pistolets nomenclature (`icon_officer.png`, `icon_deckhand.png`, card names "Officier", "Quartier-maître", "Matelots" may need thematic review).
 - All card art = placeholder until redesign; art is immutable-PNG + CSS-overlay policy as per house standard.

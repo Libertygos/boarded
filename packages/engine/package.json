@@ -1,0 +1,23 @@
+{
+  "name": "@boarded/engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "À l'abordage pure rules/state engine — no I/O, injected rng. Mirrors the WoG/Pantheons engine pattern.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test \".test-dist/**/*.test.js\""
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

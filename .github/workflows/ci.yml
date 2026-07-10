@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/libertygos/boarded
+
+jobs:
+  # ── 1. Typecheck ───────────────────────────────────────────────────────────
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Engine dist first: server/client typecheck resolve @boarded/engine types from it.
+      - run: pnpm --filter @boarded/engine build
+
+      - run: pnpm typecheck
+
+  # ── 2. Unit Tests ──────────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @boarded/engine build
+
+      - name: Engine tests
+        run: pnpm --filter @boarded/engine test
+
+      - name: Server tests (auth, room codes)
+        run: pnpm --filter @boarded/server test
+
+  # ── 3. Build ───────────────────────────────────────────────────────────────
+  build:
+    name: Build
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build engine
+        run: pnpm --filter @boarded/engine build
+
+      - name: Build server
+        run: pnpm --filter @boarded/server build
+
+      - name: Build client
+        run: pnpm --filter @boarded/client build
+
+  # ── 4. Image Build + Push (main pushes only) ───────────────────────────────
+  image:
+    name: Image Build + Push
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+
+  # NOTE: no homelab retarget job yet — add it (copy the Pantheons ci.yml stage) once
+  # Libertygos/homelab has an infra/boarded kustomization and the HOMELAB_DEPLOY_TOKEN
+  # secret is configured on this repo.
