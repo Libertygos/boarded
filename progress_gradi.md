@@ -98,10 +98,10 @@ same technologies. No images / no theme for now (placeholders); art comes later.
       win check mid-effect, deck reshuffles, auto-resolution for disconnected seats
 - [x] Engine: projection.ts (per-seat filter; curse windows non-attributed to avoid leaks)
 - [x] Engine: tests green — 13 tests incl. seeded full-match bots at 2/3/4 players
-- [ ] Server: auth (jwt/handoff/session), db, metrics, index.ts
-- [ ] Server: room-code, room-registry, BoardedRoom (lobby protocol per wog-room.md)
-- [ ] Server: match driver (advance loop, per-seat STATE_UPDATE, reconnect, abort)
-- [ ] Server: tests green
+- [x] Server: auth (jwt/handoff/session), metrics, index.ts (NO drizzle/pg DB — decision: boarded has no durable per-user store yet; deletion route dropped; added optional DEV_AUTH=1 guest login for local play)
+- [x] Server: room-code, room-registry, BoardedRoom (lobby protocol per wog-room.md)
+- [x] Server: match driver (single MOVE channel → engine applyMove; afterEngineStep drains reveals + re-projects; reconnect RECONNECT_OK; ≥2-drop abort)
+- [x] Server: tests green (13: handoff+session+room-code); manual boot check OK
 - [ ] Client: scaffolding (vite, router, entry/auth, net/room, active-room, resume)
 - [ ] Client: LandingScreen (create/join/resume)
 - [ ] Client: RoomScreen (acquisition state machine) + RoomLobby
