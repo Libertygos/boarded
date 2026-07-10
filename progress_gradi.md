@@ -88,19 +88,16 @@ same technologies. No images / no theme for now (placeholders); art comes later.
 
 - [x] Clone + analyze Pantheons & war-of-guilds (wog-room.md read in full)
 - [x] Write this progress file, commit
-- [ ] Read remaining Pantheons impl files (server index/PantheonsRoom/auth, client net/screens)
-- [ ] Scaffold monorepo (package.json, pnpm-workspace, tsconfig.base, .gitignore, .env.example)
-- [ ] Engine: types.ts (state model, cards, seats 2–4)
-- [ ] Engine: data/cards.ts (event + treasure decks per gameplay.md tables)
-- [ ] Engine: setup.ts (createLobbyState, runSetup, canStartGame)
-- [ ] Engine: round flow (laggard draw, reveal, draft, rotation)
-- [ ] Engine: raids + bonus system
-- [ ] Engine: boardings 1v1/2v2 + ties + steals
-- [ ] Engine: curses (5 types × triggers)
-- [ ] Engine: talismans (5 types × steal triggers)
-- [ ] Engine: win check (state-based, mid-effect) + deck reshuffles
-- [ ] Engine: projection.ts (per-seat hidden-info filter) + tests
-- [ ] Engine: tests green (`pnpm --filter @boarded/engine test`)
+- [x] Read remaining Pantheons impl files (server index/PantheonsRoom/auth, client net/screens)
+- [x] Scaffold monorepo (package.json, pnpm-workspace, tsconfig.base, .gitignore, .env.example)
+- [x] Engine: types.ts (state model, cards, seats 2–4, Frame interrupt stack, Move union)
+- [x] Engine: data.ts (event + treasure decks per gameplay.md tables — counts test-verified)
+- [x] Engine: setup.ts (createGame; lobby state lives in the server room, like Pantheons)
+- [x] Engine: flow.ts — full interpreter: round flow (laggard draw, reveal, draft, rotation),
+      raids+bonus, boardings 1v1/2v2/2v1 + ties + steals, all 5 curses, all 5 talismans,
+      win check mid-effect, deck reshuffles, auto-resolution for disconnected seats
+- [x] Engine: projection.ts (per-seat filter; curse windows non-attributed to avoid leaks)
+- [x] Engine: tests green — 13 tests incl. seeded full-match bots at 2/3/4 players
 - [ ] Server: auth (jwt/handoff/session), db, metrics, index.ts
 - [ ] Server: room-code, room-registry, BoardedRoom (lobby protocol per wog-room.md)
 - [ ] Server: match driver (advance loop, per-seat STATE_UPDATE, reconnect, abort)
@@ -114,6 +111,29 @@ same technologies. No images / no theme for now (placeholders); art comes later.
 - [ ] Dockerfile + CI (copy Pantheons pattern)
 - [ ] Final: update gameplay.md if any observable-behavior deviation (per its own header rule)
 
+## Engine design notes (for whoever continues)
+
+- `state.stack: Frame[]` is an interrupt stack; top frame = active input wait. `advance()`
+  (flow.ts) is the interpreter loop: processes automatic frames (`stealExec`, combat math,
+  empty windows), auto-resolves disconnected seats, returns on a real input wait.
+  `applyMove(state, userId, move, rng)` validates vs top frame + acting seat, mutates, re-advances.
+- `actingSeat(state)` (flow.ts) = seat the top frame waits on; used by projection + server.
+- Steals go through a `stealExec` frame (one steal per interpreter step) so a stolen talisman
+  can interrupt between two steals. `performSteal` → `gainTreasure` (win check) → `fireTalisman`.
+- Curse windows: `curseWindow` frame ('reveal' = Tempête/Tourbillon, 'raid' = Bateau Fantôme)
+  + kraken/brumeuse steps INSIDE the `boardingResolve` frame. Playing keeps the seat at the
+  head of the queue (second copy playable); PASS_CURSE shifts. Brumeuse escape shifts.
+- Design decisions taken (beyond gameplay.md, flagged for review):
+  - Contre-Abordage counter-boarding skips Kraken/Brumeuse windows (curse-level effect).
+  - 2v1 boarding (one defender escaped): 2 winners may both steal from the single loser.
+  - Disconnected auto-resolution: pick = first recruit > raid > boarding(auto-target next
+    clockwise); Master tie auto = attackers win; optional curse windows auto-pass;
+    Singe Doré / Longue-vue skipped when victim disconnected.
+  - Pending-frame privacy: non-actors see `{kind:'wait', seat}`; for curse windows seat=null
+    (attributing the wait would leak curse ownership).
+- `state.reveals` = Longue-vue unicast queue; server drains it; NEVER projected.
+
 ## Work log
 
 - **2026-07-10 (session 1)**: Explored refs. Pantheons layout chosen as template. Wrote plan.
+- **2026-07-10 (session 1)**: Engine complete + 13 tests green (incl. full-match smoke 2/3/4p).
