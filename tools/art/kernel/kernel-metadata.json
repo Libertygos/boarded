@@ -1,5 +1,5 @@
 {
-  "id": "KAGGLE_USERNAME/abordage-art-batch",
+  "id": "julesloison/abordage-art-batch",
   "title": "abordage-art-batch",
   "code_file": "generate.py",
   "language": "python",
@@ -7,7 +7,7 @@
   "is_private": true,
   "enable_gpu": true,
   "enable_internet": true,
-  "dataset_sources": ["KAGGLE_USERNAME/abordage-art-manifest"],
+  "dataset_sources": ["julesloison/abordage-art-manifest"],
   "competition_sources": [],
   "kernel_sources": []
 }
