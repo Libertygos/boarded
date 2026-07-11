@@ -44,7 +44,7 @@ with open(MANIFEST, newline="", encoding="utf-8") as f:
 
 log_rows = []
 for row in rows:
-    if row["status"].strip().lower() != "pending":
+    if (row.get("status") or "").strip().lower() != "pending":
         continue
     filename = row["filename"].strip()
     seed = int(row["seed"])
