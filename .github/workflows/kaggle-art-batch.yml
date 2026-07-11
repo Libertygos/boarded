@@ -50,8 +50,25 @@ jobs:
             fi
           fi
 
+      - name: Wait for dataset to be ready
+        run: |
+          for i in $(seq 1 20); do
+            s=$(kaggle datasets status julesloison/abordage-art-manifest 2>&1) || true
+            echo "$(date -u +%H:%M:%S) $s"
+            if echo "$s" | grep -qi "ready"; then exit 0; fi
+            sleep 15
+          done
+          echo "Dataset never reached ready state — kernel push would run without the manifest attached"
+          exit 1
+
       - name: Push kernel
-        run: kaggle kernels push -p tools/art/kernel
+        run: |
+          out=$(kaggle kernels push -p tools/art/kernel 2>&1)
+          echo "$out"
+          if echo "$out" | grep -qi "not valid dataset sources"; then
+            echo "Dataset source failed to attach — aborting instead of running a doomed kernel"
+            exit 1
+          fi
 
       - name: Poll kernel status (90 min hard timeout)
         run: |
