@@ -28,11 +28,13 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 # ---- Z-Image-Turbo fallback (uncomment this block, comment the FLUX block) ----
 from diffusers import DiffusionPipeline
+# Split the pipeline across both T4s instead of CPU offload: the machine's
+# ~13GB RAM cannot hold the ~12GB model (the OOM killer fired mid-batch on
+# two runs), but the two 16GB GPUs hold it comfortably.
 pipe = DiffusionPipeline.from_pretrained(
     "Tongyi-MAI/Z-Image-Turbo", torch_dtype=torch.float16,
-    trust_remote_code=True,
+    trust_remote_code=True, device_map="balanced",
 )
-pipe.enable_model_cpu_offload()
 MODEL_NAME = "Z-Image-Turbo"
 STEPS = 9
 # -------------------------------------------------------------------------------
@@ -67,6 +69,8 @@ for row in rows:
         writer = csv.writer(f)
         writer.writerow(["filename", "seed", "steps", "model"])
         writer.writerows(log_rows)
+    del image
+    gc.collect()
 
 # Free the ~12GB pipeline before packaging — the final zip step got
 # OOM-killed with the model still resident.
