@@ -35,6 +35,14 @@ pipe = DiffusionPipeline.from_pretrained(
     "Tongyi-MAI/Z-Image-Turbo", torch_dtype=torch.float16,
     trust_remote_code=True, device_map="balanced",
 )
+# T4s have no bf16, and a pure-fp16 forward overflows to NaN => all-black
+# images (known upstream: Tongyi-MAI/Z-Image issue #14). Keep weights in
+# fp16 for VRAM, but compute every transformer layer in fp32, and decode
+# with an fp32 VAE (the pipeline casts latents to vae.dtype).
+pipe.transformer.enable_layerwise_casting(
+    storage_dtype=torch.float16, compute_dtype=torch.float32
+)
+pipe.vae.to(torch.float32)
 MODEL_NAME = "Z-Image-Turbo"
 STEPS = 9
 # -------------------------------------------------------------------------------
