@@ -40,8 +40,8 @@ jobs:
           out=$(kaggle datasets create -p tools/art/dataset 2>&1)
           rc=$?
           echo "$out"
-          if [ $rc -ne 0 ] || echo "$out" | grep -qiE "already exists|409"; then
-            if echo "$out" | grep -qiE "already exists|409"; then
+          if [ $rc -ne 0 ] || echo "$out" | grep -qiE "already exists|already in use|409"; then
+            if echo "$out" | grep -qiE "already exists|already in use|409"; then
               echo "Dataset exists — pushing new version"
               kaggle datasets version -p tools/art/dataset -m "manifest v1" || exit 1
             else
