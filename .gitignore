@@ -12,3 +12,4 @@ coverage/
 .turbo/
 .vite/
 .test-dist/
+tools/art/dataset/art_manifest.csv
