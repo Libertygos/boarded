@@ -29,3 +29,20 @@ jobs:
           except (ValueError, TypeError):
               print(log)
           EOF
+
+      - name: Inspect output images
+        run: |
+          pip install --quiet kaggle pillow
+          export KAGGLE_CONFIG_DIR="$GITHUB_WORKSPACE/.kaggle"
+          chmod 600 .kaggle/kaggle.json
+          mkdir -p /tmp/inspect
+          kaggle kernels output julesloison/abordage-art-batch -p /tmp/inspect || true
+          python3 - <<'EOF'
+          import glob
+          from PIL import Image
+          import numpy as np
+          for p in sorted(glob.glob("/tmp/inspect/art/*.png")):
+              img = np.asarray(Image.open(p))
+              print(f"{p.split('/')[-1]}: shape={img.shape} min={img.min()} "
+                    f"max={img.max()} mean={img.mean():.1f} unique={len(np.unique(img))}")
+          EOF
