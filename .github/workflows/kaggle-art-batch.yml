@@ -1,0 +1,107 @@
+name: Kaggle art batch
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: kaggle-art-batch
+  cancel-in-progress: false
+
+jobs:
+  run-batch:
+    name: Anchor batch via Kaggle CLI
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Kaggle CLI
+        run: pip install --quiet kaggle
+
+      - name: Configure credentials
+        run: |
+          if [ -n "${{ secrets.KAGGLE_KEY }}" ]; then
+            mkdir -p "$RUNNER_TEMP/kaggle"
+            printf '{"username":"%s","key":"%s"}' "${{ secrets.KAGGLE_USERNAME }}" "${{ secrets.KAGGLE_KEY }}" > "$RUNNER_TEMP/kaggle/kaggle.json"
+            echo "KAGGLE_CONFIG_DIR=$RUNNER_TEMP/kaggle" >> "$GITHUB_ENV"
+            echo "Using repository secrets for Kaggle auth"
+          else
+            echo "KAGGLE_CONFIG_DIR=$GITHUB_WORKSPACE/.kaggle" >> "$GITHUB_ENV"
+            echo "Using committed .kaggle/kaggle.json for Kaggle auth"
+          fi
+          chmod 600 "${RUNNER_TEMP}/kaggle/kaggle.json" 2>/dev/null || chmod 600 .kaggle/kaggle.json
+
+      - name: Stage manifest into dataset dir
+        run: cp docs/art/art_manifest.csv tools/art/dataset/art_manifest.csv
+
+      - name: Create or version dataset
+        run: |
+          set +e
+          out=$(kaggle datasets create -p tools/art/dataset 2>&1)
+          rc=$?
+          echo "$out"
+          if [ $rc -ne 0 ] || echo "$out" | grep -qiE "already exists|409"; then
+            if echo "$out" | grep -qiE "already exists|409"; then
+              echo "Dataset exists — pushing new version"
+              kaggle datasets version -p tools/art/dataset -m "manifest v1" || exit 1
+            else
+              echo "Dataset create failed with an unexpected error (see output above)"
+              exit 1
+            fi
+          fi
+
+      - name: Push kernel
+        run: kaggle kernels push -p tools/art/kernel
+
+      - name: Poll kernel status (90 min hard timeout)
+        run: |
+          deadline=$(( $(date +%s) + 5400 ))
+          while true; do
+            status=$(kaggle kernels status julesloison/abordage-art-batch 2>&1)
+            echo "$(date -u +%H:%M:%S) $status"
+            if echo "$status" | grep -qi "complete"; then
+              echo "KERNEL_RESULT=complete" >> "$GITHUB_ENV"; break
+            fi
+            if echo "$status" | grep -qi "error"; then
+              echo "KERNEL_RESULT=error" >> "$GITHUB_ENV"; break
+            fi
+            if echo "$status" | grep -qi "cancel"; then
+              echo "KERNEL_RESULT=cancelled" >> "$GITHUB_ENV"; break
+            fi
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "KERNEL_RESULT=timeout" >> "$GITHUB_ENV"; break
+            fi
+            sleep 60
+          done
+
+      - name: Download kernel output
+        run: |
+          mkdir -p /tmp/art_out
+          kaggle kernels output julesloison/abordage-art-batch -p /tmp/art_out || true
+          ls -la /tmp/art_out
+
+      - name: Report error log
+        if: env.KERNEL_RESULT != 'complete'
+        run: |
+          echo "Kernel finished with result: $KERNEL_RESULT"
+          echo "===== log tail (last 50 lines) ====="
+          tail -n 50 /tmp/art_out/*.log 2>/dev/null || echo "(no .log file in output)"
+          exit 1
+
+      - name: Unpack and report results
+        if: env.KERNEL_RESULT == 'complete'
+        run: |
+          unzip -o /tmp/art_out/art_batch.zip -d /tmp/art_out/anchors
+          echo "===== anchors ====="
+          ls -la /tmp/art_out/anchors
+          echo "===== generation_log.csv ====="
+          cat /tmp/art_out/anchors/generation_log.csv 2>/dev/null || find /tmp/art_out/anchors -name generation_log.csv -exec cat {} \;
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: art-batch-output
+          path: /tmp/art_out
+          if-no-files-found: warn
+          retention-days: 14
