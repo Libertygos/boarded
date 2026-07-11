@@ -1,5 +1,7 @@
 import os
-os.environ["HF_HOME"] = "/kaggle/working/hf_home"
+# Keep the HF cache OFF /kaggle/working: that volume is the ~20GB kernel
+# output — model weights overflow it (ENOSPC) and bloat the output archive.
+os.environ["HF_HOME"] = "/tmp/hf_home"
 
 import csv
 import zipfile
