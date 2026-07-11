@@ -1,0 +1,31 @@
+name: Kaggle kernel log
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dump-log:
+    name: Dump full kernel log
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and print kernel log
+        run: |
+          python3 - <<'EOF'
+          import base64, json, urllib.request
+          creds = json.load(open(".kaggle/kaggle.json"))
+          auth = base64.b64encode(f"{creds['username']}:{creds['key']}".encode()).decode()
+          url = ("https://www.kaggle.com/api/v1/kernels/output"
+                 "?userName=julesloison&kernelSlug=abordage-art-batch")
+          req = urllib.request.Request(url, headers={"Authorization": "Basic " + auth})
+          data = json.load(urllib.request.urlopen(req))
+          log = data.get("log") or ""
+          try:
+              entries = json.loads(log)
+              for e in entries:
+                  print(f"[{e.get('stream_name','?')}] {e.get('data','')}", end="")
+          except (ValueError, TypeError):
+              print(log)
+          EOF
