@@ -13,23 +13,25 @@ MANIFEST = "/kaggle/input/abordage-art-manifest/art_manifest.csv"
 OUT_DIR = "/kaggle/working/art"
 os.makedirs(OUT_DIR, exist_ok=True)
 
-pipe = FluxPipeline.from_pretrained(
-    "black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16
-)
-pipe.enable_model_cpu_offload()
-
-MODEL_NAME = "FLUX.1-schnell"
-STEPS = 4
-
-# ---- Z-Image-Turbo fallback (uncomment this block, comment the FLUX block) ----
-# from diffusers import DiffusionPipeline
-# pipe = DiffusionPipeline.from_pretrained(
-#     "Tongyi-MAI/Z-Image-Turbo", torch_dtype=torch.float16,
-#     trust_remote_code=True,
+# ---- FLUX block (disabled: FLUX.1-schnell is gated on HF, needs an authorized token) ----
+# pipe = FluxPipeline.from_pretrained(
+#     "black-forest-labs/FLUX.1-schnell", torch_dtype=torch.bfloat16
 # )
 # pipe.enable_model_cpu_offload()
-# MODEL_NAME = "Z-Image-Turbo"
-# STEPS = 9
+#
+# MODEL_NAME = "FLUX.1-schnell"
+# STEPS = 4
+# -----------------------------------------------------------------------------------------
+
+# ---- Z-Image-Turbo fallback (uncomment this block, comment the FLUX block) ----
+from diffusers import DiffusionPipeline
+pipe = DiffusionPipeline.from_pretrained(
+    "Tongyi-MAI/Z-Image-Turbo", torch_dtype=torch.float16,
+    trust_remote_code=True,
+)
+pipe.enable_model_cpu_offload()
+MODEL_NAME = "Z-Image-Turbo"
+STEPS = 9
 # -------------------------------------------------------------------------------
 
 with open(MANIFEST, newline="", encoding="utf-8") as f:
