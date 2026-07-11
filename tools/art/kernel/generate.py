@@ -4,6 +4,7 @@ import os
 os.environ["HF_HOME"] = "/tmp/hf_home"
 
 import csv
+import gc
 import zipfile
 import torch
 from diffusers import FluxPipeline
@@ -60,12 +61,20 @@ for row in rows:
     ).images[0]
     image.save(os.path.join(OUT_DIR, filename))
     log_rows.append([filename, seed, STEPS, MODEL_NAME])
+    # Rewrite the log after every image: RAM is borderline with the model
+    # offloaded to CPU, and an OOM kill must not erase the record.
+    with open("/kaggle/working/generation_log.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["filename", "seed", "steps", "model"])
+        writer.writerows(log_rows)
+
+# Free the ~12GB pipeline before packaging — the final zip step got
+# OOM-killed with the model still resident.
+del pipe
+gc.collect()
+torch.cuda.empty_cache()
 
 log_path = "/kaggle/working/generation_log.csv"
-with open(log_path, "w", newline="", encoding="utf-8") as f:
-    writer = csv.writer(f)
-    writer.writerow(["filename", "seed", "steps", "model"])
-    writer.writerows(log_rows)
 
 zip_path = "/kaggle/working/art_batch.zip"
 with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
