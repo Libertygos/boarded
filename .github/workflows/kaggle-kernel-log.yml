@@ -40,9 +40,9 @@ jobs:
           python3 - <<'EOF'
           import glob
           from PIL import Image
-          import numpy as np
           for p in sorted(glob.glob("/tmp/inspect/art/*.png")):
-              img = np.asarray(Image.open(p))
-              print(f"{p.split('/')[-1]}: shape={img.shape} min={img.min()} "
-                    f"max={img.max()} mean={img.mean():.1f} unique={len(np.unique(img))}")
+              img = Image.open(p)
+              colors = img.getcolors(maxcolors=1 << 20)
+              print(f"{p.split('/')[-1]}: size={img.size} mode={img.mode} "
+                    f"extrema={img.getextrema()} unique_colors={len(colors) if colors else '>1M'}")
           EOF
