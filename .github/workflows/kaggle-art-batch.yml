@@ -19,17 +19,16 @@ jobs:
         run: pip install --quiet kaggle
 
       - name: Configure credentials
+        env:
+          KAGGLE_JSON: ${{ secrets.KAGGLE_JSON }}
         run: |
-          if [ -n "${{ secrets.KAGGLE_KEY }}" ]; then
-            mkdir -p "$RUNNER_TEMP/kaggle"
-            printf '{"username":"%s","key":"%s"}' "${{ secrets.KAGGLE_USERNAME }}" "${{ secrets.KAGGLE_KEY }}" > "$RUNNER_TEMP/kaggle/kaggle.json"
-            echo "KAGGLE_CONFIG_DIR=$RUNNER_TEMP/kaggle" >> "$GITHUB_ENV"
-            echo "Using repository secrets for Kaggle auth"
-          else
-            echo "KAGGLE_CONFIG_DIR=$GITHUB_WORKSPACE/.kaggle" >> "$GITHUB_ENV"
-            echo "Using committed .kaggle/kaggle.json for Kaggle auth"
+          if [ -z "$KAGGLE_JSON" ]; then
+            echo "KAGGLE_JSON repository secret is not set — aborting before any Kaggle call" >&2
+            exit 1
           fi
-          chmod 600 "${RUNNER_TEMP}/kaggle/kaggle.json" 2>/dev/null || chmod 600 .kaggle/kaggle.json
+          mkdir -p ~/.kaggle
+          printf '%s' "$KAGGLE_JSON" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
 
       - name: Stage manifest into dataset dir
         run: cp docs/art/art_manifest.csv tools/art/dataset/art_manifest.csv
