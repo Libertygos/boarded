@@ -1,6 +1,6 @@
 # À l'abordage — Style Bible
 
-**Version:** 1.0.0 (2026-07-10)
+**Version:** 1.1.0 (2026-07-13)
 **Status:** FROZEN — any change requires a version bump + changelog entry.
 This document is the single visual authority. The Kaggle notebook mirrors
 STYLE_PREFIX verbatim; `art_manifest.csv` subject_prompts assume it is prepended.
@@ -26,13 +26,43 @@ Rules:
 | Parchment field       | Cream      | `#F2EAD8` | (implicit in prefix) |
 | Ink                   | Black      | `#1A1714` | (implicit in prefix) |
 
-Color assignment by category:
-- **Recruitments:** the suit element(s) in the illustration painted in suit
-  color, "as the only colored element". Captain: all four (one element each).
-- **Curses / Raids:** bonus suit color as an integrated ink ACCENT (spray,
-  mist, wash) — never a forced literal object.
-- **Away Boarding:** mix of the 2–3 involved suit colors as accents.
-- **Talismans / Map Corners:** pure black ink, zero accent color.
+## Color doctrine (v1.1.0 — supersedes all per-family color rules in v1.0.0)
+
+**Default: everything is black sumi-e ink on aged parchment.**
+Color appears ONLY on suit objects themselves, rendered as those objects:
+
+| Suit object | Color |
+|---|---|
+| Sails | indigo #2E5A88 |
+| Canons | vermillion #C0432F |
+| Sabres | jade #3E7C59 |
+| Pistols | plum #6E4A7E |
+
+No colored smoke, no ambient washes, no colored splashes, no color accents
+anywhere except the objects listed above. Figures, ships' hulls, rigging,
+water, ground, sky, architecture: black ink only.
+
+**Applies to**: crew/recruitment, boardings, raids.
+**Boarding composition rule**: exactly one boat; all figures inside the
+boat; suit-colored objects only.
+
+**Exception 1 — Curses**: black ink shapes plus a splash of the bonus-suit
+color, integrated into the ink. Loose/splashed color is EXCLUSIVE to
+curses and functions as the curse marker. No other family may splash.
+
+**Exception 2 — Talismans**: monochrome ensō circle; the central object
+may carry its natural colors (whatever makes sense for the object).
+Everything outside the object is colorless.
+
+**Map**: one single full-bleed nautical chart image (monochrome ink
+cartography, one compass rose, content bleeding off all four edges, no
+border or frame composition). The four corner card masters are produced
+by offline 2× Lanczos upscale + quadrant crop of this single image —
+they are not generated individually.
+
+v1.0.0 line "Away Boarding = mix of involved suit colors" is RETIRED.
+Approved masters predating v1.1.0 (batch-1 kraken, batch-1 gold-object
+talisman) are grandfathered and remain immutable.
 
 ## 3. Category visual grammar
 
@@ -93,4 +123,9 @@ flavor and immutable once approved.
 
 ## 8. Changelog
 
+- **1.1.0** (2026-07-13) — Color doctrine v1.1.0 (§2): black-ink default,
+  color restricted to suit objects only; splashed color exclusive to
+  Curses; Talisman natural-color exception; single full-bleed map chart
+  replaces per-corner generation; Away Boarding suit-color-mix rule
+  retired. Batch-1 kraken and gold-object talisman grandfathered.
 - **1.0.0** (2026-07-10) — Initial frozen version from Stage 1 interview.
