@@ -42,6 +42,12 @@ pipe = DiffusionPipeline.from_pretrained(
 pipe.transformer.enable_layerwise_casting(
     storage_dtype=torch.float16, compute_dtype=torch.float32
 )
+# Layerwise casting only hooks leaf submodules; the transformer's own
+# direct params (pad_token) stay fp16 and crash into fp32 activations in
+# _prepare_sequence ("Index put requires the source and destination
+# dtypes match"). They are a few KB, so hold them in fp32 permanently.
+for p in pipe.transformer.parameters(recurse=False):
+    p.data = p.data.float()
 pipe.vae.to(torch.float32)
 MODEL_NAME = "Z-Image-Turbo"
 STEPS = 9
