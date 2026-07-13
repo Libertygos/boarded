@@ -42,12 +42,21 @@ pipe = DiffusionPipeline.from_pretrained(
 pipe.transformer.enable_layerwise_casting(
     storage_dtype=torch.float16, compute_dtype=torch.float32
 )
-# Layerwise casting only hooks leaf submodules; the transformer's own
-# direct params (pad_token) stay fp16 and crash into fp32 activations in
-# _prepare_sequence ("Index put requires the source and destination
-# dtypes match"). They are a few KB, so hold them in fp32 permanently.
-for p in pipe.transformer.parameters(recurse=False):
-    p.data = p.data.float()
+# Layerwise casting only manages the leaf modules it hooks; every fp16
+# tensor outside them collides with the now-fp32 activations. Two crashes
+# so far: the root's pad_token (index_put dtype mismatch), then q_norm/
+# k_norm — norms are in the hooks' default skip list, and diffusers'
+# RMSNorm downcasts its output to its fp16 weight dtype, leaving q/k Half
+# vs v float in scaled_dot_product_attention. Hold every unhooked fp16
+# param/buffer in fp32 permanently — they are tiny (norms, embeddings).
+# Hooked modules must be left alone so weights stay fp16 in storage.
+for module in pipe.transformer.modules():
+    registry = getattr(module, "_diffusers_hook", None)
+    if registry is not None and registry.get_hook("layerwise_casting") is not None:
+        continue
+    for t in list(module.parameters(recurse=False)) + list(module.buffers(recurse=False)):
+        if t.dtype == torch.float16:
+            t.data = t.data.float()
 pipe.vae.to(torch.float32)
 MODEL_NAME = "Z-Image-Turbo"
 STEPS = 9
