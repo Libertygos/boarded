@@ -13,3 +13,4 @@ coverage/
 .vite/
 .test-dist/
 tools/art/dataset/art_manifest.csv
+.kaggle/
