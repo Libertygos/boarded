@@ -29,6 +29,7 @@ import {
 import { generateRoomCode, normalizeRoomCode } from './room-code.js';
 import { isCodeTaken, registerRoom, unregisterRoom, type RoomPhase } from './room-registry.js';
 import { verifySession } from '../auth/session.js';
+import { reportMatch } from '../http/matchReport.js';
 import {
   recordPlayerConnected,
   recordPlayerDisconnected,
@@ -83,6 +84,10 @@ export class BoardedRoom extends Room {
   private rng: (() => number) | null = null;
   private started = false;
   private sessionSecret = process.env.SESSION_JWT_SECRET ?? '';
+  /** Facts for the platform match report, frozen at startMatch (the room locks). */
+  private matchStartedAt: Date | null = null;
+  private matchPlayerIds: string[] = [];
+  private matchReported = false;
 
   // ---- lifecycle ------------------------------------------------------------
 
@@ -381,6 +386,8 @@ export class BoardedRoom extends Room {
     // Separate stream for move-time randomness (steals, reshuffles) — still injected.
     this.rng = makeRng((seed ^ 0x9e3779b9) >>> 0);
     this.started = true;
+    this.matchStartedAt = new Date();
+    this.matchPlayerIds = seatInputs.map((s) => s.userId);
     this.lock(); // no new joiners mid-match (reconnects still allowed)
     // The start signal is the first per-seat projection ('state'), wog-room.md §4.3.
     this.afterEngineStep();
@@ -450,6 +457,17 @@ export class BoardedRoom extends Room {
     this.broadcastProjections();
     if (state.status === 'ended') {
       this.broadcast('gameOver', { winner: state.winner });
+      // Completed matches only — an abandoned room (dispose without an end)
+      // is not a played game for the platform stats. Guarded: afterEngineStep
+      // can run again on the ended state (reconnect re-projections).
+      if (!this.matchReported && this.matchStartedAt) {
+        this.matchReported = true;
+        void reportMatch({
+          playerAccountIds: this.matchPlayerIds,
+          startedAt: this.matchStartedAt,
+          endedAt: new Date(),
+        });
+      }
     }
   }
 

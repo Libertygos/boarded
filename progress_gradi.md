@@ -166,3 +166,13 @@ same technologies. No images / no theme for now (placeholders); art comes later.
   smoke passed over real WS transport, Dockerfile+CI+README, gameplay.md §13 rulings.
   **MVP COMPLETE** — everything requested (room + landing + gameroom, same tech) is
   implemented and pushed. Remaining work is polish (see Next steps).
+- **2026-07-15**: Platform match reporting (gosgames TICKET-102 caller). New
+  `server/src/http/matchReport.ts`: on `gameOver`, POST
+  `{GOSGAMES_INTERNAL_URL}/api/internal/matches` with `X-Internal-Token` =
+  `INTERNAL_SERVICE_TOKEN`, body `{ gameSlug, playerAccountIds, startedAt, endedAt }`
+  (facts frozen at `startMatch`; completed matches only; best-effort — unconfigured =
+  no-op, failures log and never throw). **Slug ratified: `boarded`** — the gosgames
+  migration that registers À l'abordage in its `games` table must use this slug (and
+  seed durations 20–30 min per its TICKET-101). Deploy note: the game is not in the
+  homelab cluster yet; when it lands, its Deployment needs `INTERNAL_SERVICE_TOKEN`
+  (existing secret `gosgames-internal-token`, namespace gosgames) + `GOSGAMES_INTERNAL_URL`.
