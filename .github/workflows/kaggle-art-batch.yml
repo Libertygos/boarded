@@ -114,6 +114,11 @@ jobs:
             echo "Dataset source failed to attach — aborting instead of running a doomed kernel"
             exit 1
           fi
+          # Right after a push the status endpoint still reports the PREVIOUS
+          # version as complete; polling immediately raced and downloaded
+          # stale output (run of 2026-07-16 ~14:0x). Give the new version
+          # time to enter the queue before the poll loop starts.
+          sleep 120
 
       # 3h: 33 manifest rows at fp32 layerwise compute run ~3-4 min/image on
       # the T4s — a 90-min ceiling abandoned run 29489204041 mid-generation.
