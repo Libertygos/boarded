@@ -32,9 +32,14 @@ jobs:
             echo "KAGGLE_JSON repository secret is not set — aborting before any Kaggle call" >&2
             exit 1
           fi
+          umask 077
           mkdir -p ~/.kaggle
           printf '%s' "$KAGGLE_JSON" > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
+
+      # Fail in seconds with a clear message when the stored key is dead,
+      # instead of a confusing CLI error mid-pipeline (see run 29482700899).
+      - name: Verify Kaggle auth
+        run: python3 "$GITHUB_WORKSPACE/tools/art/kaggle_auth_probe.py"
 
       - name: Stage manifest into dataset dir
         run: cp docs/art/art_manifest.csv tools/art/dataset/art_manifest.csv
