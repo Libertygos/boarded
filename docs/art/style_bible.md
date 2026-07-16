@@ -1,6 +1,6 @@
 # À l'abordage — Style Bible
 
-**Version:** 1.3.3 (2026-07-16)
+**Version:** 1.3.4 (2026-07-16)
 **Status:** FROZEN — any change requires a version bump + changelog entry.
 This document is the single visual authority. The Kaggle notebook mirrors
 STYLE_PREFIX verbatim; `art_manifest.csv` subject_prompts assume it is prepended.
@@ -57,9 +57,13 @@ city on an island. Black ink + parchment only, plus splashes of the card's
 value color around the boat. No color splashes in the sea. Compositions
 may vary slightly but stay clearly the same scene.
 
-**Away Boardings** — pure black ink on parchment, NO color at all (suit
-color is added in post-production). 1v1 card: one ship. 2v2 card: two
-ships.
+**Away Boardings (v1.3.4)** — every boarding card shows the SAME scene:
+two ships locked in battle, pirate silhouettes swinging on ropes from one
+boat to the other, all in black ink. The scene does not change between
+1v1 and 2v2. Per card, small bursts of colored ink ("little explosions")
+mark the card's value profile — one burst color per value in the profile
+(10 distinct profiles → 10 masters shared by the 13 cards). The v1.3.0
+colorless one-ship/two-ship pair is retired.
 
 **Curses** — black ink scene plus a splash of the bonus-suit color,
 integrated into the ink. Loose/splashed color otherwise remains EXCLUSIVE
@@ -154,6 +158,13 @@ flavor and immutable once approved.
   unless overridden.
 
 ## 8. Changelog
+
+- **1.3.4** (2026-07-16) — Jules's evening rulings: boardings redone —
+  one shared two-ship rope-boarding scene for all 13 cards, with per-card
+  value-color ink bursts (10 profile masters; colorless 1v1/2v2 pair
+  retired). Treasure map: candidate #5's three-corner route layout
+  ratified as the base; rework with more landmass and fewer skulls/odd
+  elements (3 candidates, seeds 1370-72).
 
 - **1.3.3** (2026-07-16) — ART-14 gate: everything validated except the
   treasure maps. Map family re-specced from Jules's vintage-map
