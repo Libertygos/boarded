@@ -1,6 +1,6 @@
 # À l'abordage — Style Bible
 
-**Version:** 1.3.1 (2026-07-16)
+**Version:** 1.3.2 (2026-07-16)
 **Status:** FROZEN — any change requires a version bump + changelog entry.
 This document is the single visual authority. The Kaggle notebook mirrors
 STYLE_PREFIX verbatim; `art_manifest.csv` subject_prompts assume it is prepended.
@@ -74,8 +74,12 @@ allowed. Counter-boarding talismans: ONLY the value object itself — no
 ship, no scene — painted in its value's color.
 
 **Treasure map** — standalone full-bleed monochrome treasure map occupying
-the entire card, no border/frame, no lettering. Two candidate prompts/
-seeds are generated; exactly one master is kept.
+the entire card, no lettering. Density ruling (v1.3.2): ~60% of the
+surface covered in land — islands, palms, jungle, volcanoes, skull rocks
+and markers — the remaining water filled with small wave marks; nothing
+may feel empty. Model-drawn border lines are tolerated and cropped
+in-game. Two candidate prompts/seeds are generated; exactly one master
+is kept.
 
 **Card backs** — one events back (recruits + raids + boardings) and one
 treasures back. Symmetric/ornamental, unmistakably card backs, no scene
@@ -148,6 +152,14 @@ flavor and immutable once approved.
 
 ## 8. Changelog
 
+- **1.3.2** (2026-07-16) — ART-13 gate rulings: treasure maps must be
+  dense (~60% land: islands/trees/skulls; waves everywhere else, never
+  empty) and their drawn borders are cropped in-game rather than fought
+  in the prompt; golden monkey must read as a drawing, not a photo;
+  card-back prompts may not contain playing-card vocabulary (the "no
+  spades no clubs" phrasing planted literal card faces in ART-13) —
+  described as ornamental woodblock-style ink panels instead. 7 more
+  masters approved (27/33).
 - **1.3.1** (2026-07-16) — ART-12 gate rulings from Jules: captain carries
   all four value objects again (large, suit-colored) instead of abstract
   splashes; golden monkey must read as a gold statue; trapped chest must
