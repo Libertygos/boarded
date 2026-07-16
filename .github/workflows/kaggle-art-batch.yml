@@ -7,6 +7,11 @@ on:
         description: "Skip dataset/kernel push; poll the already-running kernel and fetch its output"
         type: boolean
         default: false
+      batch:
+        description: "Manifest batch to generate: a = crew + boardings, b = raids + curses + maps, c = talismans + backs + role"
+        type: choice
+        options: [all, a, b, c]
+        default: all
 
 concurrency:
   group: kaggle-art-batch
@@ -49,9 +54,27 @@ jobs:
       - name: Verify Kaggle auth
         run: python3 "$GITHUB_WORKSPACE/tools/art/kaggle_auth_probe.py"
 
-      - name: Stage manifest into dataset dir
+      - name: Stage manifest into dataset dir (batch filter)
         if: ${{ !inputs.download_only }}
-        run: cp docs/art/art_manifest.csv tools/art/dataset/art_manifest.csv
+        env:
+          BATCH: ${{ inputs.batch || 'all' }}
+        run: |
+          python3 - <<'EOF'
+          import csv, os
+          batch = (os.environ.get("BATCH") or "all").lower()
+          rows = list(csv.DictReader(open("docs/art/art_manifest.csv")))
+          kept = 0
+          for r in rows:
+              if (r.get("status") == "pending" and batch != "all"
+                      and (r.get("batch") or "").lower() != batch):
+                  r["status"] = "deferred"
+              kept += r.get("status") == "pending"
+          with open("tools/art/dataset/art_manifest.csv", "w", newline="", encoding="utf-8") as fh:
+              w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+              w.writeheader()
+              w.writerows(rows)
+          print(f"batch={batch}: {kept} rows staged as pending")
+          EOF
 
       - name: Create or version dataset
         if: ${{ !inputs.download_only }}
