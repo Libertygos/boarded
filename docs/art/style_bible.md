@@ -1,6 +1,6 @@
 # À l'abordage — Style Bible
 
-**Version:** 1.1.0 (2026-07-13)
+**Version:** 1.3.0 (2026-07-16)
 **Status:** FROZEN — any change requires a version bump + changelog entry.
 This document is the single visual authority. The Kaggle notebook mirrors
 STYLE_PREFIX verbatim; `art_manifest.csv` subject_prompts assume it is prepended.
@@ -26,53 +26,76 @@ Rules:
 | Parchment field       | Cream      | `#F2EAD8` | (implicit in prefix) |
 | Ink                   | Black      | `#1A1714` | (implicit in prefix) |
 
-## Color doctrine (v1.1.0 — supersedes all per-family color rules in v1.0.0)
+## Color doctrine (v1.3.0 — supersedes v1.1.0/v1.2.0 per-family rules)
 
 **Default: everything is black sumi-e ink on aged parchment.**
-Color appears ONLY on suit objects themselves, rendered as those objects:
+The four value objects are fixed game-wide and each is ALWAYS rendered in
+its own suit color; nothing else carries color unless a family rule below
+says so:
 
-| Suit object | Color |
-|---|---|
-| Sails | indigo #2E5A88 |
-| Canons | vermillion #C0432F |
-| Sabres | jade #3E7C59 |
-| Pistols | plum #6E4A7E |
+| Value object | Suit | Color |
+|---|---|---|
+| Guns (pistols) | Sailors | plum #6E4A7E |
+| Sails | Sails | indigo #2E5A88 |
+| Cannons | Canons | vermillion #C0432F |
+| Swords (sabres) | Officers | jade #3E7C59 |
 
-No colored smoke, no ambient washes, no colored splashes, no color accents
-anywhere except the objects listed above. Figures, ships' hulls, rigging,
-water, ground, sky, architecture: black ink only.
+Figures, ships' hulls, rigging, water, ground, sky, architecture: black
+ink only.
 
-**Applies to**: crew/recruitment, boardings, raids.
-**Boarding composition rule**: exactly one boat; all figures inside the
-boat; suit-colored objects only.
+**Recruits** — exactly ONE human silhouette per card, never more, posed
+with gravitas (no comedic pose). Single-value recruits bear exactly ONE
+object of their value; double-value recruits exactly TWO objects of the
+same value; objects in the value's color, silhouette otherwise black.
+**Captain exception**: black silhouette with splashes of all four suit
+colors; the four value objects are NOT drawn.
 
-**Exception 1 — Curses**: black ink shapes plus a splash of the bonus-suit
-color, integrated into the ink. Loose/splashed color is EXCLUSIVE to
-curses and functions as the curse marker. No other family may splash.
+**Raids** — one scene concept for all four cards: a ship near a fortified
+city on an island. Black ink + parchment only, plus splashes of the card's
+value color around the boat. No color splashes in the sea. Compositions
+may vary slightly but stay clearly the same scene.
 
-**Exception 2 — Talismans**: monochrome ensō circle; the central object
-may carry its natural colors (whatever makes sense for the object).
-Everything outside the object is colorless.
+**Away Boardings** — pure black ink on parchment, NO color at all (suit
+color is added in post-production). 1v1 card: one ship. 2v2 card: two
+ships.
 
-**Map**: one single full-bleed nautical chart image (monochrome ink
-cartography, one compass rose, content bleeding off all four edges, no
-border or frame composition). The four corner card masters are produced
-by offline 2× Lanczos upscale + quadrant crop of this single image —
-they are not generated individually.
+**Curses** — black ink scene plus a splash of the bonus-suit color,
+integrated into the ink. Loose/splashed color otherwise remains EXCLUSIVE
+to curses (the captain's four-color splash and the raid splashes are the
+ratified v1.3.0 exceptions).
 
-v1.0.0 line "Away Boarding = mix of involved suit colors" is RETIRED.
-Approved masters predating v1.1.0 (batch-1 kraken, batch-1 gold-object
-talisman) are grandfathered and remain immutable.
+**Talismans** — single object centered in a large hand-brushed ensō
+circle; deliberately stylized brushwork, dialed BELOW the near-realistic
+rendering of ART-09..11 output. Classic talismans (spyglass, trapped
+chest, cursed jewel, golden monkey): muted natural color on the object
+allowed. Counter-boarding talismans: ONLY the value object itself — no
+ship, no scene — painted in its value's color.
+
+**Treasure map** — standalone full-bleed monochrome treasure map occupying
+the entire card, no border/frame, no lettering. Two candidate prompts/
+seeds are generated; exactly one master is kept.
+
+**Card backs** — one events back (recruits + raids + boardings) and one
+treasures back. Symmetric/ornamental, unmistakably card backs, no scene
+illustration. Events back may carry the four value-object emblems in
+their suit colors; treasures back stays monochrome.
+
+**Master of Winds** — single illustration used on both faces, ornamental
+card-back treatment, monochrome black ink.
+
+Approved masters predating v1.3.0 are grandfathered and remain immutable
+unless Jules explicitly re-opens them.
 
 ## 3. Category visual grammar
 
 | Category      | Grammar |
 |---------------|---------|
 | Recruitments  | Human figure, near-solid black semi-silhouette, ONE readable feature in negative space (eye, grin, scar). Suit element in suit color, same brush language (colored ink, not flat cutout). Value-2 cards may echo count in art where natural, never forced — overlay pips are the source of truth. |
-| Talismans     | Single object centered inside a large hand-brushed ensō circle. Monochrome. Ensō is EXCLUSIVE to talismans. |
-| Map Corners   | Aged nautical chart fragment: fine cartographic linework, coastline, compass rose, dotted routes, torn edges. Art bleeds toward the card's named corner (composition exception, §4). Four prompts written as quadrants of one implied chart. |
+| Talismans     | Single object centered inside a large hand-brushed ensō circle, stylized brushwork (realism dialed down per v1.3.0). Ensō is EXCLUSIVE to talismans. |
+| Treasure Map  | Standalone full-bleed monochrome treasure map (island, volcano, dotted route ship→X, compass rose, sea monster, wave marks — sumi-e, never cartoon). No border, no lettering. |
 | Curses        | Scene (kraken, whirlpool, tempest…), one readable feature in negative space where a creature has a face. Bonus-color accent. |
-| Raids / Away Boarding | Action scenes, same silhouette rules; colors per §2. |
+| Raids / Away Boarding | Action scenes, same silhouette rules; colors per §2 (boardings colorless). |
+| Card Backs / Master of Winds | Symmetric ornamental designs, no scene, per §2. |
 
 ## 4. Composition rules
 
@@ -123,6 +146,22 @@ flavor and immutable once approved.
 
 ## 8. Changelog
 
+- **1.3.0** (2026-07-16) — ART-12 full-batch rulings from Jules: recruits
+  strictly ONE silhouette with gravitas (captain = four-color splashes, no
+  value objects; single-value = 1 object, double-value = 2 objects); raid
+  scene fixed (ship near fortified island city, value-color splashes
+  around the boat only, none in the sea); boardings pure black (color in
+  post; 1v1 = one ship, 2v2 = two ships); talisman realism dialed down;
+  counter-boarding talismans = lone value object in suit color; treasure
+  map = 2 standalone full-bleed monochrome candidates (1 kept); new
+  categories: events/treasures card backs (ornamental, no scene) and
+  Master of Winds (ornamental, both faces). "Value object" vocabulary
+  ratified: guns/sails/cannons/swords.
+- **1.2.0** (2026-07-14, recorded retroactively — ratified during the
+  ART-09..11 M900 gate reviews) — boardings/raids = fully black scene +
+  suit-color touches; maps = standalone monochrome full-bleed treasure
+  maps (map_treasure_01/02) replacing the quadrant-crop plan; talisman =
+  ensō + naturally-colored object.
 - **1.1.0** (2026-07-13) — Color doctrine v1.1.0 (§2): black-ink default,
   color restricted to suit objects only; splashed color exclusive to
   Curses; Talisman natural-color exception; single full-bleed map chart

@@ -9,7 +9,8 @@ import zipfile
 import torch
 from diffusers import FluxPipeline
 
-# Mirrored VERBATIM from docs/art/style_bible.md v1.0.0 — do not edit here.
+# Mirrored VERBATIM from docs/art/style_bible.md (frozen since v1.0.0,
+# unchanged through v1.3.0) — do not edit here.
 STYLE_PREFIX = "traditional sumi-e ink painting, bold black ink on warm aged parchment paper, wet ink wash with dry-brush strokes and deliberate ink spatter, centered subject with generous negative space above and below, strictly limited palette of black ink and warm parchment, golden age of piracy, 18th century, playful adventurous tone, borderless full-bleed artwork, pristine, free of any lettering, calligraphy, stamps or seals"
 
 MANIFEST = "/kaggle/input/abordage-art-manifest/art_manifest.csv"
