@@ -2,6 +2,11 @@ name: Kaggle art batch
 
 on:
   workflow_dispatch:
+    inputs:
+      download_only:
+        description: "Skip dataset/kernel push; poll the already-running kernel and fetch its output"
+        type: boolean
+        default: false
 
 concurrency:
   group: kaggle-art-batch
@@ -14,7 +19,7 @@ jobs:
   run-batch:
     name: Anchor batch via Kaggle CLI
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
 
@@ -45,9 +50,11 @@ jobs:
         run: python3 "$GITHUB_WORKSPACE/tools/art/kaggle_auth_probe.py"
 
       - name: Stage manifest into dataset dir
+        if: ${{ !inputs.download_only }}
         run: cp docs/art/art_manifest.csv tools/art/dataset/art_manifest.csv
 
       - name: Create or version dataset
+        if: ${{ !inputs.download_only }}
         run: |
           set +e
           out=$(kaggle datasets create -p tools/art/dataset 2>&1)
@@ -64,6 +71,7 @@ jobs:
           fi
 
       - name: Wait for dataset to be ready
+        if: ${{ !inputs.download_only }}
         run: |
           for i in $(seq 1 20); do
             s=$(kaggle datasets status julesloison/abordage-art-manifest 2>&1) || true
@@ -75,6 +83,7 @@ jobs:
           exit 1
 
       - name: Push kernel
+        if: ${{ !inputs.download_only }}
         run: |
           out=$(kaggle kernels push -p tools/art/kernel 2>&1)
           echo "$out"
@@ -83,9 +92,11 @@ jobs:
             exit 1
           fi
 
-      - name: Poll kernel status (90 min hard timeout)
+      # 3h: 33 manifest rows at fp32 layerwise compute run ~3-4 min/image on
+      # the T4s — a 90-min ceiling abandoned run 29489204041 mid-generation.
+      - name: Poll kernel status (3 h hard timeout)
         run: |
-          deadline=$(( $(date +%s) + 5400 ))
+          deadline=$(( $(date +%s) + 10800 ))
           while true; do
             status=$(kaggle kernels status julesloison/abordage-art-batch 2>&1)
             echo "$(date -u +%H:%M:%S) $status"
