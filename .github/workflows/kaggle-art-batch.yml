@@ -93,16 +93,26 @@ jobs:
             fi
           fi
 
-      - name: Wait for dataset to be ready
+      - name: Wait for dataset version to be live
         if: ${{ !inputs.download_only }}
+        # `kaggle datasets status` reports "ready" while the PREVIOUS version
+        # is still the one being served — kernel v24 ran with the old manifest
+        # that way (run 29506321710) and regenerated a stale batch. Only trust
+        # the version once the served manifest byte-matches the staged copy.
         run: |
+          mkdir -p /tmp/ds_check
           for i in $(seq 1 20); do
-            s=$(kaggle datasets status julesloison/abordage-art-manifest 2>&1) || true
-            echo "$(date -u +%H:%M:%S) $s"
-            if echo "$s" | grep -qi "ready"; then exit 0; fi
+            rm -f /tmp/ds_check/art_manifest.csv*
+            kaggle datasets download julesloison/abordage-art-manifest -f art_manifest.csv -p /tmp/ds_check --force >/dev/null 2>&1 || true
+            [ -f /tmp/ds_check/art_manifest.csv.zip ] && unzip -oq /tmp/ds_check/art_manifest.csv.zip -d /tmp/ds_check
+            if cmp -s tools/art/dataset/art_manifest.csv /tmp/ds_check/art_manifest.csv 2>/dev/null; then
+              echo "$(date -u +%H:%M:%S) new dataset version is live (served manifest matches staged copy)"
+              exit 0
+            fi
+            echo "$(date -u +%H:%M:%S) new dataset version not live yet"
             sleep 15
           done
-          echo "Dataset never reached ready state — kernel push would run without the manifest attached"
+          echo "New dataset version never went live — kernel would run against the stale manifest"
           exit 1
 
       - name: Push kernel
