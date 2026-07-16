@@ -9,6 +9,23 @@ import zipfile
 import torch
 from diffusers import FluxPipeline
 
+# Fail in seconds with a readable message when Kaggle hands out the wrong
+# accelerator, instead of a CUDA traceback after minutes of model download.
+# P100s (sm_60) resurface whenever the kernel push drops machine_shape —
+# current torch builds ship no sm_60 kernels (see Actions run 29487114506).
+print(f"[env] torch {torch.__version__}", flush=True)
+if not torch.cuda.is_available():
+    raise SystemExit("[env] no CUDA device visible — wrong machine shape, aborting")
+for i in range(torch.cuda.device_count()):
+    name = torch.cuda.get_device_name(i)
+    cap = torch.cuda.get_device_capability(i)
+    print(f"[env] gpu{i}: {name} sm_{cap[0]}{cap[1]}", flush=True)
+    if cap < (7, 0):
+        raise SystemExit(
+            f"[env] {name} (sm_{cap[0]}{cap[1]}) is unsupported by this torch build — "
+            "kernel needs NvidiaTeslaT4 (sm_75), aborting before model download"
+        )
+
 # Mirrored VERBATIM from docs/art/style_bible.md (frozen since v1.0.0,
 # unchanged through v1.3.0) — do not edit here.
 STYLE_PREFIX = "traditional sumi-e ink painting, bold black ink on warm aged parchment paper, wet ink wash with dry-brush strokes and deliberate ink spatter, centered subject with generous negative space above and below, strictly limited palette of black ink and warm parchment, golden age of piracy, 18th century, playful adventurous tone, borderless full-bleed artwork, pristine, free of any lettering, calligraphy, stamps or seals"
