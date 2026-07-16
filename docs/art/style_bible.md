@@ -1,6 +1,6 @@
 # À l'abordage — Style Bible
 
-**Version:** 1.3.0 (2026-07-16)
+**Version:** 1.3.1 (2026-07-16)
 **Status:** FROZEN — any change requires a version bump + changelog entry.
 This document is the single visual authority. The Kaggle notebook mirrors
 STYLE_PREFIX verbatim; `art_manifest.csv` subject_prompts assume it is prepended.
@@ -47,8 +47,10 @@ ink only.
 with gravitas (no comedic pose). Single-value recruits bear exactly ONE
 object of their value; double-value recruits exactly TWO objects of the
 same value; objects in the value's color, silhouette otherwise black.
-**Captain exception**: black silhouette with splashes of all four suit
-colors; the four value objects are NOT drawn.
+**Captain exception (v1.3.1)**: black silhouette bearing all FOUR value
+objects, one per suit, each large and clearly visible in its suit color
+(saber jade, pistol plum, cannon vermillion, sail indigo). The v1.3.0
+splashes-only rule is retired after the ART-12 gate.
 
 **Raids** — one scene concept for all four cards: a ship near a fortified
 city on an island. Black ink + parchment only, plus splashes of the card's
@@ -146,6 +148,14 @@ flavor and immutable once approved.
 
 ## 8. Changelog
 
+- **1.3.1** (2026-07-16) — ART-12 gate rulings from Jules: captain carries
+  all four value objects again (large, suit-colored) instead of abstract
+  splashes; golden monkey must read as a gold statue; trapped chest must
+  show its trap teeth inside a complete ensō; treasure maps must fill all
+  four corners with illustrations and carry no border; card backs may not
+  use classic playing-card pips. 20 ART-12 masters approved and committed
+  under client/public/cards/ (plain git, no LFS — ruling supersedes the
+  LFS plan).
 - **1.3.0** (2026-07-16) — ART-12 full-batch rulings from Jules: recruits
   strictly ONE silhouette with gravitas (captain = four-color splashes, no
   value objects; single-value = 1 object, double-value = 2 objects); raid
