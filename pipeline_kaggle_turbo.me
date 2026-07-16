@@ -1,3 +1,25 @@
+# ⚠️ ART-12 addendum (2026-07-16) — batch armed, blocked on dead Kaggle credential
+
+The full ART-12 batch (33 images, seeds 1301–1333, style bible v1.3.0) is committed on
+branch `claude/illustration-batch-pipeline-ofgmjp` and runs with one dispatch of
+*Kaggle art batch*. It cannot run yet: **Kaggle answers 401 "Unauthenticated" to the key
+stored in the `KAGGLE_JSON` repo secret** (probed Basic + Bearer + `KAGGLE_API_TOKEN`
+variants via the *Kaggle kernel log* workflow — all 401; same secret + same CLI 2.2.3
+worked on 2026-07-13). Most likely the ART-09..11 sessions on the M900 minted a fresh
+Kaggle token on 2026-07-14/15, which invalidated this one.
+
+**Fix (Jules only):** GitHub → Settings → Secrets and variables → Actions → `KAGGLE_JSON`
+→ replace with the working `~/.kaggle/kaggle.json` from the M900 (or a freshly generated
+token from kaggle.com → Settings → API — note that generating a new one kills the M900's).
+No workflow change needed after that; the session auto-retries the batch hourly.
+
+Other pipeline changes this session: Kaggle CLI pinned to 1.7.x (post-Jul-13 releases
+dropped kaggle.json auth), kernel output additionally force-pushed to scratch branch
+`art-batch-out` (review sandboxes cannot reach the Azure blob host serving Actions
+artifacts), diagnostics workflow reads the secret instead of the deleted committed key.
+
+---
+
 # Kaggle Art Batch Pipeline — Status Report (ART-04b)
 
 **Date:** 2026-07-11
