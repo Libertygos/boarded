@@ -1,6 +1,6 @@
 # À l'abordage — Style Bible
 
-**Version:** 1.3.2 (2026-07-16)
+**Version:** 1.3.3 (2026-07-16)
 **Status:** FROZEN — any change requires a version bump + changelog entry.
 This document is the single visual authority. The Kaggle notebook mirrors
 STYLE_PREFIX verbatim; `art_manifest.csv` subject_prompts assume it is prepended.
@@ -73,13 +73,16 @@ chest, cursed jewel, golden monkey): muted natural color on the object
 allowed. Counter-boarding talismans: ONLY the value object itself — no
 ship, no scene — painted in its value's color.
 
-**Treasure map** — standalone full-bleed monochrome treasure map occupying
-the entire card, no lettering. Density ruling (v1.3.2): ~60% of the
-surface covered in land — islands, palms, jungle, volcanoes, skull rocks
-and markers — the remaining water filled with small wave marks; nothing
-may feel empty. Model-drawn border lines are tolerated and cropped
-in-game. Two candidate prompts/seeds are generated; exactly one master
-is kept.
+**Treasure map** — standalone full-bleed treasure map occupying the
+entire card, no lettering. Density ruling (v1.3.2): ~60% of the surface
+covered in land — islands, palms, jungle, volcanoes, skull rocks and
+markers — the remaining water filled with small wave marks; nothing may
+feel empty. Model-drawn border lines are tolerated and cropped in-game.
+Color ruling (v1.3.3, from Jules's vintage-map references): the map
+carries ONE color — a vermillion red dashed treasure route ending at a
+vermillion red X; the route must touch at least two corners of the card
+and the X sits in exactly one corner. Everything else black ink.
+Seven candidate prompts/seeds are generated; exactly one master is kept.
 
 **Card backs** — one events back (recruits + raids + boardings) and one
 treasures back. Symmetric/ornamental, unmistakably card backs, no scene
@@ -152,6 +155,12 @@ flavor and immutable once approved.
 
 ## 8. Changelog
 
+- **1.3.3** (2026-07-16) — ART-14 gate: everything validated except the
+  treasure maps. Map family re-specced from Jules's vintage-map
+  references: red dashed route + red X as the map's only color, route
+  through ≥2 corners, X in exactly one corner; 7 candidates generated
+  (map_treasure_01..07), one to keep. Captain, golden monkey and both
+  card backs approved (31/33 masters committed).
 - **1.3.2** (2026-07-16) — ART-13 gate rulings: treasure maps must be
   dense (~60% land: islands/trees/skulls; waves everywhere else, never
   empty) and their drawn borders are cropped in-game rather than fought
