@@ -1458,6 +1458,20 @@ input::placeholder {
   }
 }
 
+/* Touch screens: comfortable tap targets — the « ? » help buttons and the action
+   buttons grow to a finger-sized hit area without changing the desktop layout. */
+@media (pointer: coarse) {
+  .btn-aide {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+
+  .btn {
+    min-height: 42px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
