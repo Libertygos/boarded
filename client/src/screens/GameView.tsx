@@ -68,9 +68,11 @@ export function GameView({
   const over = proj.status === 'ended';
   const discardTop = proj.treasureDiscard[proj.treasureDiscard.length - 1];
 
-  /** Treasure zoom — hand cards are not playable by design (curse plays go through the
-   * dedicated prompt), so a click opens the card full size instead. */
+  /** Treasure zoom — a click opens the card full size. If the zoomed card is a curse
+   * playable in the current window, the zoom carries the Jouer/Ignorer decision. */
   const [zoom, setZoom] = useState<TreasureCard | null>(null);
+  const zoomJouable =
+    zoom !== null && proj.pending.kind === 'curseWindow' && proj.pending.playable.includes(zoom.id);
 
   const annonces = useAnnonces(proj.log);
   const [combatReveal, dismissCombat] = useCombatReveal(proj);
@@ -217,9 +219,34 @@ export function GameView({
         <div className="voile" onClick={() => setZoom(null)}>
           <div className="zoom-carte" onClick={(e) => e.stopPropagation()}>
             <TreasureCardImage card={zoom} size="lg" />
-            <button className="btn" onClick={() => setZoom(null)}>
-              {fr.jeu.fermer}
-            </button>
+            {zoomJouable ? (
+              <div className="choix">
+                <button
+                  className="btn btn-primaire"
+                  disabled={busy}
+                  onClick={() => {
+                    act({ type: 'PLAY_CURSE', cardId: zoom.id });
+                    setZoom(null);
+                  }}
+                >
+                  {fr.jeu.jouer}
+                </button>
+                <button
+                  className="btn"
+                  disabled={busy}
+                  onClick={() => {
+                    act({ type: 'PASS_CURSE' });
+                    setZoom(null);
+                  }}
+                >
+                  {fr.jeu.ignorer}
+                </button>
+              </div>
+            ) : (
+              <button className="btn" onClick={() => setZoom(null)}>
+                {fr.jeu.fermer}
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -629,32 +656,30 @@ function PendingPrompt({
     }
     case 'curseWindow': {
       const cardById = new Map(proj.self.treasures.map((t) => [t.id, t]));
-      // Clicking a curse zooms it (like a hand treasure) with an explicit Jouer/Ignorer
-      // decision — playing is never one accidental click.
+      // Clicking a curse zooms it; the decision lives in the zoom — Jouer plays it,
+      // Ignorer declines the window (former Passer). No inline play/pass buttons.
+      // The overlay sits OUTSIDE the animated .prompt panel so nothing can occlude it.
       return (
-        <div className="prompt">
-          <strong>{fr.jeu.fenetreMaledictionTitre}</strong>
-          <span className="texte-faible">{fr.jeu.fenetreMaledictionAstuce}</span>
-          <div className="choix choix-cartes">
-            {p.playable.map((id) => {
-              const card = cardById.get(id);
-              return (
-                <button
-                  key={id}
-                  className="carte-btn"
-                  disabled={busy}
-                  aria-label={card ? fr.jeu.agrandir(treasureTitle(card)) : undefined}
-                  onClick={() => card && setCurseZoom(card)}
-                >
-                  {card ? <TreasureCardImage card={card} size="sm" /> : <span className="btn">?</span>}
-                </button>
-              );
-            })}
-          </div>
-          <div className="choix">
-            <button className="btn btn-nu" disabled={busy} onClick={() => act({ type: 'PASS_CURSE' })}>
-              {fr.jeu.passer}
-            </button>
+        <>
+          <div className="prompt">
+            <strong>{fr.jeu.fenetreMaledictionTitre}</strong>
+            <span className="texte-faible">{fr.jeu.fenetreMaledictionAstuce}</span>
+            <div className="choix choix-cartes">
+              {p.playable.map((id) => {
+                const card = cardById.get(id);
+                return (
+                  <button
+                    key={id}
+                    className="carte-btn"
+                    disabled={busy}
+                    aria-label={card ? fr.jeu.agrandir(treasureTitle(card)) : undefined}
+                    onClick={() => card && setCurseZoom(card)}
+                  >
+                    {card ? <TreasureCardImage card={card} size="sm" /> : <span className="btn">?</span>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           {curseZoom && (
             <div className="voile" onClick={() => setCurseZoom(null)}>
@@ -668,14 +693,14 @@ function PendingPrompt({
                   >
                     {fr.jeu.jouer}
                   </button>
-                  <button className="btn" onClick={() => setCurseZoom(null)}>
+                  <button className="btn" disabled={busy} onClick={() => act({ type: 'PASS_CURSE' })}>
                     {fr.jeu.ignorer}
                   </button>
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </>
       );
     }
     case 'masterTie':
