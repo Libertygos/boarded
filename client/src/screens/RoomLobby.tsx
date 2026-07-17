@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { Room } from 'colyseus.js';
 import { fr } from '../i18n/fr.js';
 import type { LobbyState } from '../net/room.js';
+import { VALUES } from '@boarded/engine';
+import { valueIcon } from '../cards/art.js';
 
 export function RoomLobby({
   room,
@@ -68,7 +70,10 @@ export function RoomLobby({
           const isHostSeat = seat.seatId === lobby.hostSeat && seat.occupied;
           return (
             <li key={seat.seatId} className={`siege ${seat.occupied ? '' : 'siege-libre'}`}>
-              <span className="num">{seat.seatId + 1}</span>
+              <span className="num">
+                <img src={valueIcon(VALUES[seat.seatId % VALUES.length]!)} alt="" aria-hidden />
+                {seat.seatId + 1}
+              </span>
               <span className="nom">
                 {seat.occupied ? seat.displayName : fr.lobby.seatEmpty}
                 {isHostSeat && <span className="badge"> {fr.lobby.host}</span>}

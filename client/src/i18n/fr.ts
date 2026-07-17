@@ -2,6 +2,7 @@
 export const fr = {
   appName: "À l'abordage",
   tagline: 'Course aux trésors — 2 à 4 pirates, ~20 minutes.',
+  pitch: 'Recrutez votre équipage, abordez vos rivaux et réunissez les 4 coins de la carte au trésor.',
   connecting: 'Connexion…',
   handoffFailed: 'Connexion refusée par la plateforme.',
   disconnected: 'Connexion perdue…',
@@ -55,6 +56,13 @@ export const fr = {
   },
   jeu: {
     manche: (n: number) => `Manche ${n}`,
+    piocheEvenements: 'Événements',
+    piocheTresors: 'Trésors',
+    defausse: 'Défausse',
+    attaque: 'attaque',
+    defend: 'défend',
+    deconnecte: 'déco',
+    aucuneRecrue: '(aucune recrue)',
     maitre: 'Maître du Vent',
     retardataire: 'Retardataire',
     vous: 'vous',

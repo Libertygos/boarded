@@ -1,20 +1,14 @@
 /**
  * GameView — the gameroom. Renders ONLY the per-seat projection the server sends and
- * emits Move messages. Placeholder styling (no art/theme yet): cards are labelled tiles.
+ * emits Move messages. Visuals: art masters + overlay via CardImage (style bible §5);
+ * layout = ink table, parchment ship panels, event draft row, private treasure hand.
  */
 import { useEffect, useMemo, useState } from 'react';
-import type {
-  BoardingCard,
-  Corner,
-  EventCard,
-  Move,
-  PlayerProjection,
-  PrivateReveal,
-  TreasureCard,
-  Value,
-} from '@boarded/engine';
-import { CORNERS, CORNER_LABEL, CURSE_LABEL, RECRUIT_LABEL, TALISMAN_LABEL, VALUE_LABEL, VALUES } from '@boarded/engine';
+import type { BoardingCard, Corner, Move, PlayerProjection, PrivateReveal, Value } from '@boarded/engine';
+import { CORNERS, CORNER_LABEL, RECRUIT_LABEL, VALUE_LABEL, VALUES } from '@boarded/engine';
 import { fr } from '../i18n/fr.js';
+import { CardBack, EventCardImage, TreasureCardImage } from '../cards/CardImage.js';
+import { valueIcon } from '../cards/art.js';
 
 export function GameView({
   proj,
@@ -50,22 +44,38 @@ export function GameView({
   }, [proj]);
 
   const over = proj.status === 'ended';
+  const discardTop = proj.treasureDiscard[proj.treasureDiscard.length - 1];
 
   return (
     <div className="jeu">
       <header className="jeu-entete">
-        <h2 className="titre">{fr.appName}</h2>
-        <span>{fr.jeu.manche(proj.round)}</span>
-        <span className="texte-faible">
-          {fr.jeu.maitre} : {nameOf(proj.masterSeat)} · {fr.jeu.retardataire} : {nameOf(proj.laggardSeat)}
-        </span>
-        <span className="texte-faible">
-          Événements : {proj.eventDeckCount} · Trésors : {proj.treasureDeckCount}
-        </span>
+        <div className="jeu-identite">
+          <h2 className="titre">{fr.appName}</h2>
+          <span className="jeu-manche">{fr.jeu.manche(proj.round)}</span>
+        </div>
+        <div className="jeu-roles">
+          <span className="role-jeton" title={fr.jeu.maitre}>
+            <img src="/cards/w440/master_of_winds.webp" alt="" aria-hidden />
+            {fr.jeu.maitre} : <b>{nameOf(proj.masterSeat)}</b>
+          </span>
+          <span className="texte-faible">
+            {fr.jeu.retardataire} : {nameOf(proj.laggardSeat)}
+          </span>
+        </div>
+        <div className="jeu-pioches">
+          <CardBack kind="events" size="xs" count={proj.eventDeckCount} label={fr.jeu.piocheEvenements} />
+          <CardBack kind="treasures" size="xs" count={proj.treasureDeckCount} label={fr.jeu.piocheTresors} />
+          {discardTop && (
+            <div className="defausse">
+              <TreasureCardImage card={discardTop} size="xs" />
+              <span className="carte-legende">{fr.jeu.defausse}</span>
+            </div>
+          )}
+        </div>
       </header>
 
       {banner && (
-        <p className="erreur" role="alert">
+        <p className="erreur bandeau" role="alert">
           {banner}
         </p>
       )}
@@ -78,6 +88,7 @@ export function GameView({
           treasureInfo={fr.jeu.cartesEnMain(proj.self.treasures.length)}
           me
           connected
+          master={proj.self.seatId === proj.masterSeat}
           badges={shipBadges(proj, proj.self.seatId)}
         />
         {proj.opponents.map((o) => (
@@ -88,23 +99,24 @@ export function GameView({
             crew={o.crew.map((c) => RECRUIT_LABEL[c.kind])}
             treasureInfo={fr.jeu.cartesEnMain(o.treasureCount)}
             connected={o.connected}
+            master={o.seatId === proj.masterSeat}
             badges={shipBadges(proj, o.seatId)}
           />
         ))}
       </section>
 
-      <section>
-        <h3>{fr.jeu.evenements}</h3>
-        <div className="cartes">
+      <section className="table-evenements">
+        <h3 className="rubrique">{fr.jeu.evenements}</h3>
+        <div className="cartes cartes-evenements">
           {proj.revealed.length === 0 && <span className="texte-faible">—</span>}
           {proj.revealed.map((card) => (
             <button
               key={card.id}
-              className={`carte ${proj.pending.kind === 'pickEvent' ? 'cliquable' : ''}`}
+              className="carte-btn"
               disabled={proj.pending.kind !== 'pickEvent' || busy}
               onClick={() => act({ type: 'PICK_EVENT', cardId: card.id })}
             >
-              {eventLabel(card)}
+              <EventCardImage card={card} size="md" />
             </button>
           ))}
         </div>
@@ -112,34 +124,33 @@ export function GameView({
 
       <PendingPrompt proj={proj} busy={busy} act={act} nameOf={nameOf} />
 
-      <section>
-        <h3>{fr.jeu.tresors}</h3>
+      <section className="main-tresors">
+        <h3 className="rubrique">{fr.jeu.tresors}</h3>
         <div className="cartes">
           {proj.self.treasures.length === 0 && <span className="texte-faible">{fr.jeu.mainVide}</span>}
           {proj.self.treasures.map((t) => (
-            <span key={t.id} className={`carte ${treasureClass(t)}`}>
-              {treasureLabel(t)}
-            </span>
+            <TreasureCardImage key={t.id} card={t} size="sm" />
           ))}
         </div>
       </section>
 
       <section className="journal" aria-label={fr.jeu.journal}>
-        {proj.log.map((entry, i) => (
-          <p key={i}>{entry.text}</p>
-        ))}
+        <h3 className="rubrique">{fr.jeu.journal}</h3>
+        <div className="journal-lignes">
+          {proj.log.map((entry, i) => (
+            <p key={i}>{entry.text}</p>
+          ))}
+        </div>
       </section>
 
       {reveal && (
         <div className="voile" onClick={onRevealDismiss}>
-          <div className="panneau" onClick={(e) => e.stopPropagation()}>
+          <div className="panneau panneau-revelation" onClick={(e) => e.stopPropagation()}>
             <h3>{fr.jeu.revelation(nameOf(reveal.aboutSeat))}</h3>
             <div className="cartes">
               {reveal.treasures.length === 0 && <span className="texte-faible">{fr.jeu.mainVide}</span>}
               {reveal.treasures.map((t) => (
-                <span key={t.id} className={`carte ${treasureClass(t)}`}>
-                  {treasureLabel(t)}
-                </span>
+                <TreasureCardImage key={t.id} card={t} size="sm" />
               ))}
             </div>
             <button className="btn" onClick={onRevealDismiss}>
@@ -151,7 +162,12 @@ export function GameView({
 
       {over && (
         <div className="voile">
-          <div className="panneau" style={{ textAlign: 'center' }}>
+          <div className="panneau panneau-fin">
+            <div className="fin-embleme">
+              {VALUES.map((v) => (
+                <img key={v} src={valueIcon(v)} alt="" aria-hidden />
+              ))}
+            </div>
             <h2>
               {fr.jeu.gagnant(
                 proj.winner === proj.self.userId
@@ -167,7 +183,7 @@ export function GameView({
       )}
 
       {!over && (
-        <button className="btn btn-nu" onClick={onExit}>
+        <button className="btn btn-nu jeu-quitter" onClick={onExit}>
           {fr.jeu.quitter}
         </button>
       )}
@@ -179,11 +195,11 @@ export function GameView({
 
 function shipBadges(proj: PlayerProjection, seat: number): string[] {
   const badges: string[] = [];
-  if (seat === proj.masterSeat) badges.push(fr.jeu.maitre);
   if (seat === proj.laggardSeat) badges.push(fr.jeu.retardataire);
   if (proj.boarding) {
-    if (proj.boarding.attackers.includes(seat)) badges.push('⚔ attaque');
-    else if (proj.boarding.defenders.includes(seat) && !proj.boarding.escaped.includes(seat)) badges.push('🛡 défend');
+    if (proj.boarding.attackers.includes(seat)) badges.push(`⚔ ${fr.jeu.attaque}`);
+    else if (proj.boarding.defenders.includes(seat) && !proj.boarding.escaped.includes(seat))
+      badges.push(`🛡 ${fr.jeu.defend}`);
   }
   return badges;
 }
@@ -195,6 +211,7 @@ function ShipPanel({
   treasureInfo,
   me,
   connected,
+  master,
   badges,
 }: {
   title: string;
@@ -203,6 +220,7 @@ function ShipPanel({
   treasureInfo: string;
   me?: boolean;
   connected: boolean;
+  master: boolean;
   badges: string[];
 }) {
   const crewCounts = new Map<string, number>();
@@ -210,25 +228,32 @@ function ShipPanel({
   return (
     <article className={`navire ${me ? 'moi' : ''}`}>
       <div className="entete-navire">
-        <strong>{title}</strong>
-        <span className="texte-faible">
+        <strong className="navire-nom">
+          {master && (
+            <img className="navire-maitre" src="/cards/w440/master_of_winds.webp" alt={fr.jeu.maitre} title={fr.jeu.maitre} />
+          )}
+          {title}
+        </strong>
+        <span className="navire-badges">
           {badges.map((b) => (
             <span key={b} className="badge">
-              {b}{' '}
+              {b}
             </span>
           ))}
-          {!connected && <span className="etat-deco">⚠ déco</span>}
+          {!connected && <span className="etat-deco">⚠ {fr.jeu.deconnecte}</span>}
         </span>
       </div>
       <div className="valeurs">
         {VALUES.map((v) => (
-          <span key={v}>
-            {VALUE_LABEL[v]} <b>{values[v]}</b>
+          <span key={v} className={`valeur ${values[v] > 0 ? '' : 'valeur-zero'}`} title={VALUE_LABEL[v]}>
+            <img src={valueIcon(v)} alt={VALUE_LABEL[v]} />
+            <b>{values[v]}</b>
           </span>
         ))}
       </div>
-      <div className="texte-faible" style={{ fontSize: '0.85em' }}>
-        {[...crewCounts.entries()].map(([label, n]) => `${label}${n > 1 ? ` ×${n}` : ''}`).join(', ') || '(aucune recrue)'}
+      <div className="navire-cale texte-faible">
+        {[...crewCounts.entries()].map(([label, n]) => `${label}${n > 1 ? ` ×${n}` : ''}`).join(', ') ||
+          fr.jeu.aucuneRecrue}
         {' · '}
         {treasureInfo}
       </div>
@@ -264,8 +289,10 @@ function PendingPrompt({
   switch (p.kind) {
     case 'wait':
       return (
-        <div className="prompt" style={{ borderColor: 'var(--filet)' }}>
-          <span className="texte-faible">{p.seat === null ? fr.jeu.enAttenteGenerique : fr.jeu.enAttente(nameOf(p.seat))}</span>
+        <div className="prompt prompt-attente">
+          <span className="texte-faible">
+            {p.seat === null ? fr.jeu.enAttenteGenerique : fr.jeu.enAttente(nameOf(p.seat))}
+          </span>
         </div>
       );
     case 'pickEvent':
@@ -278,27 +305,29 @@ function PendingPrompt({
       const card = p.card as BoardingCard;
       const is2v2 = card.mode === '2v2' && !p.as1v1;
       return (
-        <div className="prompt">
-          <strong>{is2v2 ? fr.jeu.choisirPartenaire : fr.jeu.choisirCible}</strong>
-          <span className="texte-faible">{eventLabel(card)}</span>
-          <div className="choix">
-            {opponents.map((s) => (
-              <button
-                key={s}
-                className="btn"
-                disabled={busy}
-                onClick={() => {
-                  if (is2v2) {
-                    const others = opponents.filter((o) => o !== s);
-                    act({ type: 'CHOOSE_BOARDING', targetSeat: others[0]!, partnerSeat: s });
-                  } else {
-                    act({ type: 'CHOOSE_BOARDING', targetSeat: s });
-                  }
-                }}
-              >
-                {nameOf(s)}
-              </button>
-            ))}
+        <div className="prompt prompt-avec-carte">
+          <EventCardImage card={card} size="sm" />
+          <div className="prompt-corps">
+            <strong>{is2v2 ? fr.jeu.choisirPartenaire : fr.jeu.choisirCible}</strong>
+            <div className="choix">
+              {opponents.map((s) => (
+                <button
+                  key={s}
+                  className="btn"
+                  disabled={busy}
+                  onClick={() => {
+                    if (is2v2) {
+                      const others = opponents.filter((o) => o !== s);
+                      act({ type: 'CHOOSE_BOARDING', targetSeat: others[0]!, partnerSeat: s });
+                    } else {
+                      act({ type: 'CHOOSE_BOARDING', targetSeat: s });
+                    }
+                  }}
+                >
+                  {nameOf(s)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       );
@@ -308,12 +337,17 @@ function PendingPrompt({
       return (
         <div className="prompt">
           <strong>{fr.jeu.fenetreMaledictionTitre}</strong>
+          <div className="choix choix-cartes">
+            {p.playable.map((id) => {
+              const card = cardById.get(id);
+              return (
+                <button key={id} className="carte-btn" disabled={busy} onClick={() => act({ type: 'PLAY_CURSE', cardId: id })}>
+                  {card ? <TreasureCardImage card={card} size="sm" /> : <span className="btn">?</span>}
+                </button>
+              );
+            })}
+          </div>
           <div className="choix">
-            {p.playable.map((id) => (
-              <button key={id} className="btn" disabled={busy} onClick={() => act({ type: 'PLAY_CURSE', cardId: id })}>
-                {treasureLabel(cardById.get(id))}
-              </button>
-            ))}
             <button className="btn btn-nu" disabled={busy} onClick={() => act({ type: 'PASS_CURSE' })}>
               {fr.jeu.passer}
             </button>
@@ -348,8 +382,7 @@ function PendingPrompt({
             {p.choices.map((c) => (
               <button
                 key={c.id}
-                className="btn"
-                style={selected.includes(c.id) ? { borderColor: 'var(--accent)' } : undefined}
+                className={`btn ${selected.includes(c.id) ? 'btn-choisi' : ''}`}
                 disabled={busy}
                 onClick={() => toggle(c.id)}
               >
@@ -375,8 +408,7 @@ function PendingPrompt({
             {CORNERS.map((c) => (
               <button
                 key={c}
-                className="btn"
-                style={corner === c ? { borderColor: 'var(--accent)' } : undefined}
+                className={`btn ${corner === c ? 'btn-choisi' : ''}`}
                 disabled={busy}
                 onClick={() => setCorner(c)}
               >
@@ -459,28 +491,4 @@ function PendingPrompt({
     default:
       return null;
   }
-}
-
-// ---- card labels ----------------------------------------------------------------------
-
-function eventLabel(card: EventCard): string {
-  if (card.type === 'recruit') {
-    const grants = Object.entries(card.grants)
-      .map(([v, n]) => `+${n} ${VALUE_LABEL[v as Value]}`)
-      .join(', ');
-    return `${RECRUIT_LABEL[card.kind]} (${grants})`;
-  }
-  if (card.type === 'raid') return `Pillage (bonus : ${VALUE_LABEL[card.bonusIcon]})`;
-  return `Abordage ${card.mode} — ${card.profile.map((v) => VALUE_LABEL[v]).join(' + ')} (bonus : ${VALUE_LABEL[card.bonusIcon]})`;
-}
-
-function treasureLabel(t: TreasureCard | undefined): string {
-  if (!t) return '?';
-  if (t.type === 'corner') return CORNER_LABEL[t.corner];
-  if (t.type === 'curse') return `☠ ${CURSE_LABEL[t.curse]}`;
-  return `✦ ${TALISMAN_LABEL[t.talisman]}${t.talisman === 'contre-abordage' && t.value ? ` (${VALUE_LABEL[t.value]})` : ''}`;
-}
-
-function treasureClass(t: TreasureCard): string {
-  return t.type === 'corner' ? 'carte-coin' : t.type === 'curse' ? 'carte-malediction' : 'carte-talisman';
 }

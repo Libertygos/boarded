@@ -13,8 +13,19 @@ import { clearActiveRoom, setActiveRoom } from '../net/active-room.js';
 import { createGameRoom, joinGameRoom, onceMessage, type RoomWelcome } from '../net/room.js';
 import { loadResume, saveResume } from '../state/resume.js';
 import type { Session } from '../auth/handoff.js';
+import { VALUES, VALUE_LABEL } from '@boarded/engine';
+import { valueIcon } from '../cards/art.js';
 
 const ROOM_CODE_LENGTH = 5;
+
+/** Hero fan — one card per family so the landing shows the game's whole visual range. */
+const HERO_CARDS = [
+  'curse_release_the_kraken',
+  'recruitment_captain',
+  'map_treasure',
+  'boarding_canons_sails_sailors',
+  'talisman_spyglass',
+];
 
 export function LandingScreen({
   session,
@@ -83,38 +94,53 @@ export function LandingScreen({
 
   return (
     <div className="landing">
-      <header>
-        <h1>{fr.appName}</h1>
-        <p className="texte-faible">{fr.tagline}</p>
+      <div className="landing-eventail" aria-hidden>
+        {HERO_CARDS.map((name, i) => (
+          <img key={name} src={`/cards/w440/${name}.webp`} alt="" className={`eventail-carte ec-${i}`} draggable={false} />
+        ))}
+      </div>
+
+      <header className="landing-entete">
+        <h1 className="landing-titre">{fr.appName}</h1>
+        <p className="landing-devise">{fr.tagline}</p>
+        <p className="landing-pitch">{fr.pitch}</p>
+        <div className="landing-emblemes" aria-hidden>
+          {VALUES.map((v) => (
+            <img key={v} src={valueIcon(v)} alt={VALUE_LABEL[v]} title={VALUE_LABEL[v]} />
+          ))}
+        </div>
       </header>
 
-      <button className="btn btn-primaire" onClick={() => void handleCreate()} disabled={busy}>
-        {fr.landing.create}
-      </button>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void handleJoin();
-        }}
-      >
-        <input
-          value={joinCode}
-          onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-          placeholder={fr.landing.codePlaceholder}
-          maxLength={ROOM_CODE_LENGTH}
-          disabled={busy}
-        />
-        <button type="submit" className="btn" disabled={busy || joinCode.length < ROOM_CODE_LENGTH}>
-          {fr.landing.join}
+      <div className="landing-actions panneau">
+        <button className="btn btn-primaire" onClick={() => void handleCreate()} disabled={busy}>
+          {fr.landing.create}
         </button>
-      </form>
 
-      {error && (
-        <p className="erreur" role="alert">
-          {error}
-        </p>
-      )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleJoin();
+          }}
+        >
+          <input
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            placeholder={fr.landing.codePlaceholder}
+            maxLength={ROOM_CODE_LENGTH}
+            disabled={busy}
+            aria-label={fr.landing.codePlaceholder}
+          />
+          <button type="submit" className="btn" disabled={busy || joinCode.length < ROOM_CODE_LENGTH}>
+            {fr.landing.join}
+          </button>
+        </form>
+
+        {error && (
+          <p className="erreur" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
 
       <footer className="texte-faible">
         {session.displayName ?? session.userId} · {fr.landing.version(APP_VERSION)} · 2 à 4 joueurs

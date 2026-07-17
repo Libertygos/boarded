@@ -1,15 +1,54 @@
-/* Placeholder theme — neutral, functional. Real art/theme comes later; keep selectors
-   semantic so the visual pass only touches this file. */
+/* À l'abordage — theme (single theming surface).
+   Direction ratified by docs/art/style_bible.md: sumi-e ink + aged parchment, four suit
+   colors. The UI is an ink-washed captain's table: deep ink field, parchment panels,
+   vermillion (the map's red route) as the primary accent. Display face: Pirata One;
+   body face: IM Fell English (18th-century book face, matches the period). */
+
+/* ---- fonts (self-hosted, client/public/fonts) ---- */
+@font-face {
+  font-family: 'Pirata One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/pirata-one.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/im-fell-english.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IM Fell English';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/im-fell-english-italic.woff2') format('woff2');
+}
+
+/* ---- tokens ---- */
 :root {
-  --fond: #14181f;
-  --panneau: #1e242e;
-  --panneau-2: #262e3a;
-  --filet: #39424f;
-  --texte: #e6e9ee;
-  --texte-faible: #9aa4b2;
-  --accent: #d9a441;
-  --ok: #4caf7d;
-  --erreur: #d96459;
+  --encre: #1a1714;
+  --encre-table: #171310;
+  --parchemin: #f2ead8;
+  --parchemin-2: #e9dec4;
+  --parchemin-ombre: #d9c9a4;
+  --canons: #c0432f;
+  --voiles: #2e5a88;
+  --sabres: #3e7c59;
+  --pistolets: #6e4a7e;
+  --texte: #efe6d0;
+  --texte-faible: #b3a68b;
+  --texte-encre: #241f19;
+  --texte-encre-faible: #6d6045;
+  --filet: #3a332a;
+  --filet-parchemin: rgba(26, 23, 20, 0.45);
+  --accent: var(--canons);
+  --ok: var(--sabres);
+  --erreur: #d96450;
+  --affiche: 'Pirata One', 'Georgia', serif;
+  --plume: 'IM Fell English', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
 }
 
 * {
@@ -18,17 +57,37 @@
 
 body {
   margin: 0;
-  background: var(--fond);
+  background-color: var(--encre-table);
+  /* faint sumi-e wave marks over an uneven ink wash */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='90' viewBox='0 0 140 90'%3E%3Cg fill='none' stroke='%23f2ead8' stroke-opacity='0.045' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M8 26 q 14 -12 28 0'/%3E%3Cpath d='M22 32 q 10 -8 20 0'/%3E%3Cpath d='M84 66 q 14 -12 28 0'/%3E%3Cpath d='M98 72 q 10 -8 20 0'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(1200px 700px at 30% 0%, #201b16 0%, var(--encre-table) 60%);
   color: var(--texte);
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  line-height: 1.4;
+  font-family: var(--plume);
+  font-size: 17px;
+  line-height: 1.45;
 }
 
 h1,
-h2,
+h2 {
+  margin: 0 0 8px;
+  font-family: var(--affiche);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
 h3 {
   margin: 0 0 8px;
   font-weight: 600;
+}
+
+.rubrique {
+  font-family: var(--plume);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  color: var(--texte-faible);
 }
 
 button,
@@ -36,39 +95,68 @@ input {
   font: inherit;
 }
 
+:focus-visible {
+  outline: 3px solid var(--canons);
+  outline-offset: 2px;
+}
+
 input {
-  background: var(--fond);
-  color: var(--texte);
-  border: 1px solid var(--filet);
+  background: var(--parchemin);
+  color: var(--texte-encre);
+  border: 1.5px solid var(--filet-parchemin);
   border-radius: 6px;
   padding: 8px 10px;
 }
+input::placeholder {
+  color: var(--texte-encre-faible);
+}
 
+/* ---- buttons: parchment chips inked at the edges ---- */
 .btn {
-  background: var(--panneau-2);
-  color: var(--texte);
-  border: 1px solid var(--filet);
-  border-radius: 6px;
-  padding: 8px 14px;
+  background: var(--parchemin-2);
+  color: var(--texte-encre);
+  border: 1.5px solid var(--texte-encre);
+  border-radius: 7px;
+  padding: 8px 16px;
   cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 .btn:hover:not(:disabled) {
-  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.4);
+  border-color: var(--canons);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
 }
 .btn:disabled {
   opacity: 0.45;
   cursor: default;
 }
 .btn-primaire {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #14181f;
+  background: var(--canons);
+  border-color: #7e2a1c;
+  color: var(--parchemin);
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 .btn-nu {
   background: none;
   border-color: transparent;
-  color: var(--texte-faible);
+  box-shadow: none;
+  color: inherit;
+  opacity: 0.7;
+}
+.btn-nu:hover:not(:disabled) {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+.btn-choisi {
+  border-color: var(--canons);
+  box-shadow: 0 0 0 2px var(--canons), 2px 2px 0 rgba(0, 0, 0, 0.35);
 }
 
 .centre-plein {
@@ -78,15 +166,27 @@ input {
   justify-content: center;
 }
 
+/* ---- parchment panel (dev login, modals, landing actions) ---- */
 .panneau {
-  background: var(--panneau);
-  border: 1px solid var(--filet);
+  background: var(--parchemin);
+  color: var(--texte-encre);
+  border: 2px solid var(--texte-encre);
   border-radius: 10px;
-  padding: 20px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(217, 201, 164, 0.5);
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   min-width: 300px;
+  max-width: min(92vw, 640px);
+}
+.panneau .texte-faible {
+  color: var(--texte-encre-faible);
+}
+.panneau h1,
+.panneau h2,
+.panneau h3 {
+  color: var(--texte-encre);
 }
 
 .texte-faible {
@@ -95,6 +195,13 @@ input {
 .erreur {
   color: var(--erreur);
 }
+.bandeau {
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--erreur);
+  border-radius: 8px;
+  background: rgba(217, 100, 80, 0.12);
+}
 .toast {
   max-width: 520px;
   margin: 16px auto 0;
@@ -102,31 +209,384 @@ input {
   border: 1px solid var(--erreur);
   border-radius: 8px;
   color: var(--erreur);
+  background: rgba(217, 100, 80, 0.1);
 }
 
-/* ---- landing ---- */
-.landing {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 48px 16px;
+/* =====================================================================
+   Card component — art master + overlay (style bible §5)
+   ===================================================================== */
+.carte-visuel {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 5 / 7;
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--parchemin);
+  border: 1px solid rgba(26, 23, 20, 0.8);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+.carte-xs {
+  width: 74px;
+  border-radius: 5px;
+}
+.carte-sm {
+  width: 132px;
+  border-radius: 7px;
+}
+.carte-md {
+  width: 178px;
+}
+.carte-lg {
+  width: min(320px, 78vw);
+  border-radius: 12px;
+}
+
+.carte-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
+/* overlay text bands (quiet parchment zones baked into the composition) */
+.carte-textes {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  justify-content: space-between;
   text-align: center;
 }
-.landing form {
+.carte-titre {
+  font-family: var(--affiche);
+  color: var(--texte-encre);
+  padding: 3.5% 16% 0;
+  line-height: 1.05;
+  text-shadow: 0 0 6px rgba(242, 234, 216, 0.9);
+}
+.carte-effet {
+  font-family: var(--plume);
+  font-style: italic;
+  color: var(--texte-encre);
+  padding: 0 7% 4.5%;
+  line-height: 1.18;
+  text-shadow: 0 0 5px rgba(242, 234, 216, 0.9);
+}
+.carte-md .carte-titre {
+  font-size: 16px;
+}
+.carte-md .carte-effet {
+  font-size: 11px;
+}
+.carte-sm .carte-titre {
+  font-size: 12.5px;
+}
+.carte-sm .carte-effet {
+  font-size: 9px;
+}
+.carte-lg .carte-titre {
+  font-size: 26px;
+}
+.carte-lg .carte-effet {
+  font-size: 15px;
+}
+.carte-xs .carte-titre,
+.carte-xs .carte-effet {
+  display: none;
+}
+
+/* suit pips — emblem glyphs on a parchment roundel, top-left */
+.carte-pips {
+  position: absolute;
+  top: 2.6%;
+  left: 3.6%;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 5px;
+  background: rgba(242, 234, 216, 0.92);
+  border: 1px solid var(--filet-parchemin);
+  border-radius: 999px;
+}
+.pip {
+  display: block;
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+}
+.carte-sm .pip {
+  width: 13px;
+  height: 13px;
+}
+.carte-xs .pip {
+  width: 10px;
+  height: 10px;
+}
+.carte-lg .pip {
+  width: 24px;
+  height: 24px;
+}
+
+/* bonus badge — suit glyph in a hand-drawn ring with a "+", top-right */
+.carte-bonus {
+  position: absolute;
+  top: 2.6%;
+  right: 3.6%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(242, 234, 216, 0.92);
+  border: 2px solid var(--texte-encre);
+  border-radius: 48% 52% 50% 50% / 53% 47% 53% 47%;
+}
+.carte-bonus .pip {
+  width: 19px;
+  height: 19px;
+}
+.carte-bonus-plus {
+  position: absolute;
+  right: -3px;
+  bottom: -6px;
+  font-family: var(--affiche);
+  font-size: 15px;
+  color: var(--parchemin);
+  background: var(--texte-encre);
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  line-height: 14px;
+  text-align: center;
+}
+.carte-sm .carte-bonus {
+  width: 26px;
+  height: 26px;
+}
+.carte-sm .carte-bonus .pip {
+  width: 14px;
+  height: 14px;
+}
+.carte-sm .carte-bonus-plus {
+  font-size: 12px;
+  width: 12px;
+  height: 12px;
+  line-height: 11px;
+}
+.carte-xs .carte-bonus {
+  width: 18px;
+  height: 18px;
+  border-width: 1px;
+}
+.carte-xs .carte-bonus .pip {
+  width: 10px;
+  height: 10px;
+}
+.carte-xs .carte-bonus-plus {
+  display: none;
+}
+
+/* boarding mode chip (1v1 / 2v2) */
+.carte-mode {
+  position: absolute;
+  left: 4%;
+  bottom: 27%;
+  font-family: var(--affiche);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--parchemin);
+  background: rgba(26, 23, 20, 0.85);
+  padding: 1px 8px 2px;
+  border-radius: 5px;
+}
+.carte-sm .carte-mode {
+  font-size: 10px;
+  padding: 0 6px 1px;
+}
+.carte-xs .carte-mode {
+  display: none;
+}
+
+/* corner cards: full map + vermillion ring on the named corner */
+.coin-marque {
+  position: absolute;
+  width: 27%;
+  aspect-ratio: 1;
+  border: 3px dashed var(--canons);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(192, 67, 47, 0.3), inset 0 0 12px rgba(192, 67, 47, 0.35);
+}
+.carte-coin .carte-titre {
+  background: linear-gradient(rgba(242, 234, 216, 0.88), rgba(242, 234, 216, 0));
+  padding-bottom: 2%;
+}
+
+/* face-down piles */
+.carte-compte {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--affiche);
+  font-size: 24px;
+  color: var(--parchemin);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 1);
+  background: rgba(26, 23, 20, 0.28);
+}
+.carte-legende {
+  display: block;
+  text-align: center;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--texte-faible);
+  margin-top: 4px;
+}
+
+/* clickable card wrapper */
+.carte-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.14s ease;
+}
+.carte-btn:hover:not(:disabled) {
+  transform: translateY(-5px);
+}
+.carte-btn:hover:not(:disabled) .carte-visuel {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6), 0 0 0 2px var(--canons);
+}
+.carte-btn:disabled {
+  cursor: default;
+}
+
+.cartes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* =====================================================================
+   Landing
+   ===================================================================== */
+.landing {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  text-align: center;
+}
+
+.landing-eventail {
+  position: relative;
+  width: min(560px, 92vw);
+  height: clamp(180px, 38vw, 250px);
+}
+.eventail-carte {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: clamp(120px, 26vw, 168px);
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1px solid rgba(26, 23, 20, 0.85);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  transform-origin: 50% 120%;
+  animation: eventail-ouvre 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.ec-0 {
+  transform: translateX(-50%) rotate(-24deg);
+  animation-delay: 0.05s;
+}
+.ec-1 {
+  transform: translateX(-50%) rotate(-12deg);
+  animation-delay: 0.1s;
+}
+.ec-2 {
+  transform: translateX(-50%) rotate(0deg);
+  animation-delay: 0.15s;
+}
+.ec-3 {
+  transform: translateX(-50%) rotate(12deg);
+  animation-delay: 0.2s;
+}
+.ec-4 {
+  transform: translateX(-50%) rotate(24deg);
+  animation-delay: 0.25s;
+}
+@keyframes eventail-ouvre {
+  from {
+    transform: translateX(-50%) rotate(0deg) translateY(24px);
+    opacity: 0;
+  }
+}
+
+.landing-titre {
+  font-size: clamp(3rem, 9vw, 4.6rem);
+  margin: 0;
+  color: var(--parchemin);
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+}
+.landing-devise {
+  margin: 2px 0 0;
+  font-style: italic;
+  color: var(--texte-faible);
+}
+.landing-pitch {
+  margin: 6px auto 0;
+  max-width: 46ch;
+  color: var(--texte);
+}
+.landing-emblemes {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 14px;
+}
+.landing-emblemes img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+.landing-emblemes img:nth-child(odd) {
+  transform: rotate(-6deg);
+}
+.landing-emblemes img:nth-child(even) {
+  transform: rotate(5deg);
+}
+
+.landing-actions {
+  align-items: stretch;
+  min-width: min(360px, 92vw);
+}
+.landing-actions form {
   display: flex;
   gap: 8px;
   justify-content: center;
 }
-.landing input {
+.landing-actions input {
   text-transform: uppercase;
   letter-spacing: 0.3em;
   width: 9em;
   text-align: center;
+  font-family: var(--affiche);
 }
 
-/* ---- lobby ---- */
+/* =====================================================================
+   Lobby — the ship's manifest
+   ===================================================================== */
 .lobby {
   max-width: 560px;
   margin: 0 auto;
@@ -135,10 +595,21 @@ input {
   flex-direction: column;
   gap: 16px;
 }
+.lobby h1 {
+  font-size: 2.4rem;
+  margin-bottom: 0;
+}
 .lobby-code {
-  font-size: 2em;
-  letter-spacing: 0.3em;
-  color: var(--accent);
+  font-family: var(--affiche);
+  font-size: 3.2em;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  color: var(--parchemin);
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.7);
+  border-bottom: 3px dashed var(--canons);
+  display: inline-block;
+  margin: 0 auto;
+  padding: 0 10px 2px;
 }
 .sieges {
   list-style: none;
@@ -146,36 +617,50 @@ input {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
 }
 .siege {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: var(--panneau);
-  border: 1px solid var(--filet);
+  gap: 12px;
+  background: var(--parchemin);
+  color: var(--texte-encre);
+  border: 1.5px solid var(--texte-encre);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 10px 14px;
+  box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.35);
 }
 .siege-libre {
-  opacity: 0.55;
+  opacity: 0.5;
+  border-style: dashed;
+  box-shadow: none;
 }
 .siege .num {
-  color: var(--texte-faible);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texte-encre-faible);
+  font-variant-numeric: tabular-nums;
+}
+.siege .num img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 .siege .nom {
   flex: 1;
   text-align: left;
 }
 .badge {
-  font-size: 0.75em;
-  border: 1px solid var(--filet);
+  font-size: 0.72em;
+  border: 1px solid currentColor;
   border-radius: 999px;
   padding: 1px 8px;
-  color: var(--texte-faible);
+  opacity: 0.8;
 }
 .etat-pret {
   color: var(--ok);
+  font-weight: 600;
 }
 .etat-deco {
   color: var(--erreur);
@@ -187,115 +672,255 @@ input {
   justify-content: center;
 }
 
-/* ---- game ---- */
+/* =====================================================================
+   Game — the captain's table
+   ===================================================================== */
 .jeu {
-  max-width: 1080px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 12px 16px 48px;
+  padding: 14px 16px 48px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 .jeu-entete {
   display: flex;
-  align-items: baseline;
-  gap: 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--filet);
+  padding-bottom: 10px;
 }
-.jeu-entete .titre {
-  color: var(--accent);
+.jeu-identite .titre {
+  margin: 0;
+  font-size: 1.9rem;
+  color: var(--parchemin);
 }
+.jeu-manche {
+  font-style: italic;
+  color: var(--texte-faible);
+}
+.jeu-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.92em;
+}
+.role-jeton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.role-jeton img {
+  width: 24px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--filet);
+}
+.jeu-pioches {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.defausse {
+  opacity: 0.9;
+}
+
 .rang-navires {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
   gap: 10px;
 }
 .navire {
-  background: var(--panneau);
-  border: 1px solid var(--filet);
+  background: var(--parchemin);
+  color: var(--texte-encre);
+  border: 1.5px solid var(--texte-encre);
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 10px 14px;
+  box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.4), inset 0 0 40px rgba(217, 201, 164, 0.4);
 }
 .navire.moi {
-  border-color: var(--accent);
+  border: 2.5px solid var(--canons);
 }
-.navire .entete-navire {
+.entete-navire {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
 }
+.navire-nom {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--affiche);
+  font-weight: 400;
+  font-size: 1.12em;
+  letter-spacing: 0.02em;
+}
+.navire-maitre {
+  width: 18px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid var(--texte-encre);
+}
+.navire-badges {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 0.82em;
+  color: var(--texte-encre-faible);
+}
 .valeurs {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   flex-wrap: wrap;
-  margin: 6px 0;
-  color: var(--texte-faible);
+  margin: 8px 0 6px;
   font-variant-numeric: tabular-nums;
 }
-.valeurs b {
-  color: var(--texte);
+.valeur {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
-.cartes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.valeur img {
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
 }
-.carte {
-  background: var(--panneau-2);
-  border: 1px solid var(--filet);
-  border-radius: 6px;
-  padding: 6px 8px;
-  font-size: 0.85em;
+.valeur b {
+  font-size: 1.06em;
 }
-.carte.cliquable {
-  cursor: pointer;
+.valeur-zero {
+  opacity: 0.35;
+  filter: grayscale(0.6);
 }
-.carte.cliquable:hover {
-  border-color: var(--accent);
+.navire-cale {
+  color: var(--texte-encre-faible);
+  font-size: 0.84em;
+  font-style: italic;
 }
-.carte-coin {
-  border-color: var(--accent);
-}
-.carte-malediction {
-  border-color: #8d5fd3;
-}
-.carte-talisman {
-  border-color: #4c9faf;
-}
+
 .prompt {
-  background: var(--panneau);
-  border: 1px solid var(--accent);
+  background: var(--parchemin);
+  color: var(--texte-encre);
+  border: 1.5px solid var(--texte-encre);
+  border-left: 7px solid var(--canons);
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.prompt .texte-faible {
+  color: var(--texte-encre-faible);
+}
+.prompt-attente {
+  border-left-color: var(--filet-parchemin);
+  background: rgba(242, 234, 216, 0.08);
+  color: var(--texte-faible);
+  box-shadow: none;
+  border-color: var(--filet);
+}
+.prompt-avec-carte {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.prompt-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 220px;
 }
 .prompt .choix {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
+.choix-cartes {
+  gap: 12px;
+}
+
 .journal {
-  background: var(--panneau);
+  background: rgba(242, 234, 216, 0.05);
   border: 1px solid var(--filet);
   border-radius: 10px;
   padding: 10px 14px;
-  max-height: 200px;
+}
+.journal .rubrique {
+  margin-bottom: 4px;
+}
+.journal-lignes {
+  max-height: 180px;
   overflow-y: auto;
   font-size: 0.85em;
+  font-style: italic;
   color: var(--texte-faible);
 }
-.journal p {
+.journal-lignes p {
   margin: 2px 0;
 }
+
+.jeu-quitter {
+  align-self: flex-start;
+}
+
 .voile {
   position: fixed;
   inset: 0;
-  background: rgba(10, 12, 16, 0.75);
+  background: rgba(10, 8, 6, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
+  padding: 16px;
+}
+.panneau-revelation {
+  max-height: 88vh;
+  overflow-y: auto;
+}
+.panneau-fin {
+  text-align: center;
+  align-items: center;
+}
+.fin-embleme {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+.fin-embleme img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 700px) {
+  .carte-md {
+    width: 138px;
+  }
+  .carte-md .carte-titre {
+    font-size: 13px;
+  }
+  .carte-md .carte-effet {
+    font-size: 9px;
+  }
+  .jeu-pioches {
+    order: 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
