@@ -107,16 +107,17 @@ Backs & role: `back_events.png` (recruits+raids+boardings deck), `back_treasures
 6. Perf: preload the 42 PNGs (~60MB total — consider generating downscaled webp
    variants at build time for in-game use; masters stay untouched).
 
-## Status checklist
+## Status checklist — ALL DONE 2026-07-17, see progress_home.md for the session log
 
-- [ ] Read this file + progress_gradi.md + style_bible.md
-- [ ] Art resolver module with unit tests (value-based mapping above)
-- [ ] CardImage + overlay (pips, badge, title, effect text)
-- [ ] GameView integration (events, treasures, piles, role marker)
-- [ ] Corner-card decision from Jules + implementation
-- [ ] UI theme pass (index.css)
-- [ ] Image weight optimization (build-time downscale, keep masters)
-- [ ] Typecheck + build + E2E smoke green; push
+- [x] Read this file + progress_gradi.md + style_bible.md
+- [x] Art resolver module with unit tests (value-based mapping above)
+- [x] CardImage + overlay (pips, badge, title, effect text)
+- [x] GameView integration (events, treasures, piles, role marker)
+- [x] Corner-card decision + implementation (full map + vermillion corner ring — taken
+      without Jules per his "don't ask unless critical"; flagged for review in progress_home.md)
+- [x] UI theme pass (index.css)
+- [x] Image weight optimization (committed w440 webp variants, masters untouched)
+- [x] Typecheck + build + visual smoke green; pushed
 
 ## Work log
 

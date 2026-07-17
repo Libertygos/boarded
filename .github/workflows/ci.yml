@@ -60,6 +60,9 @@ jobs:
       - name: Server tests (auth, room codes)
         run: pnpm --filter @boarded/server test
 
+      - name: Client tests (art resolver vs assets on disk)
+        run: pnpm --filter @boarded/client test
+
   # ── 3. Build ───────────────────────────────────────────────────────────────
   build:
     name: Build
