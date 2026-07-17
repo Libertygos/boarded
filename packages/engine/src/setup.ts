@@ -40,6 +40,8 @@ export function createGame(matchId: string, seats: SeatInput[], seed: number): G
     pickQueue: [],
     stack: [],
     reveals: [],
+    lastCombat: null,
+    combatSeq: 0,
     log: [],
     logSeq: 0,
   };

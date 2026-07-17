@@ -18,13 +18,16 @@ import type {
   Move,
   TreasureCard,
   Value,
+  ValueCounts,
 } from './types.js';
 import { EVENTS_PER_ROUND, RuleError } from './types.js';
 import { CURSE_LABEL, CORNER_LABEL, RECRUIT_LABEL, TALISMAN_LABEL, VALUE_LABEL } from './data.js';
 import {
   bonusActive,
+  countValue,
   drawTreasure,
   gainTreasure,
+  hasCaptain,
   laggardSeat,
   log,
   nextSeat,
@@ -32,6 +35,7 @@ import {
   profileTotal,
   seatCount,
   seatsFrom,
+  stealableCrew,
   takeRandomTreasure,
 } from './state.js';
 import { shuffle } from './rng.js';
@@ -195,6 +199,18 @@ function resolveCombat(state: GameState, f: Extract<Frame, { kind: 'boardingReso
   const defenders = f.defenders.filter((s) => !f.escaped.includes(s));
   const atk = profileTotal(state, f.attackers, f.profile);
   const def = profileTotal(state, defenders, f.profile);
+  // Snapshot the combat math for the resolution report — crews can change afterwards
+  // (Coffre Piégé, Kraken on a chained boarding) before the client sees the projection.
+  f.totals = { atk, def };
+  f.contributions = Object.fromEntries(
+    [...f.attackers, ...defenders].map((s) => {
+      const p = playerAt(state, s);
+      const counts: Partial<ValueCounts> = {};
+      for (const v of f.profile) counts[v] = countValue(p, v);
+      return [s, counts];
+    }),
+  );
+  f.tie = atk === def;
   log(state, `Combat : ${atk} contre ${def}.`);
   if (atk === def) {
     f.step = 'tie';
@@ -210,6 +226,7 @@ function finishCombat(state: GameState, f: Extract<Frame, { kind: 'boardingResol
   f.losers = side === 'attackers' ? defenders : f.attackers;
   // The bonus applies to whichever side WINS (gameplay.md §6): evaluate on the winners.
   const bonus = f.bonusIcon !== null && bonusActive(state, f.winners, f.bonusIcon);
+  f.bonus = bonus;
   f.stealsPerWinner = bonus ? 2 : 1;
   log(
     state,
@@ -224,6 +241,24 @@ function autoPairing(winners: number[], losers: number[]): Array<{ winner: numbe
 }
 
 function queueSteals(state: GameState, f: Extract<Frame, { kind: 'boardingResolve' }>, pairing: Array<{ winner: number; loser: number }>): void {
+  // Publish the resolution report — the client animates it (sides → values → totals →
+  // verdict + steals). Everything in it is public information.
+  state.combatSeq += 1;
+  state.lastCombat = {
+    seq: state.combatSeq,
+    counter: f.card === null,
+    attackers: f.attackers,
+    defenders: f.defenders.filter((s) => !f.escaped.includes(s)),
+    profile: f.profile,
+    contributions: f.contributions ?? {},
+    atkTotal: f.totals?.atk ?? 0,
+    defTotal: f.totals?.def ?? 0,
+    tie: f.tie ?? false,
+    winners: f.winners ?? [],
+    losers: f.losers ?? [],
+    bonus: f.bonus ?? false,
+    steals: pairing.map((p) => ({ thief: p.winner, victim: p.loser, count: f.stealsPerWinner })),
+  };
   pop(state); // boardingResolve done
   state.stack.push({
     kind: 'stealExec',
@@ -346,12 +381,14 @@ function playCurseEffect(state: GameState, seat: number, curse: CurseCard, rng: 
       const f = top(state);
       if (f?.kind !== 'boardingResolve' || f.step !== 'kraken') return;
       const initiator = f.attackers[0]!;
+      // One Capitaine per ship: an initiator's Capitaine is out of reach when the owner
+      // already has one, so it does not count toward the stealable pool.
       const count = Math.min(
         bonusActive(state, [seat], curse.bonusIcon) ? 2 : 1,
-        playerAt(state, initiator).crew.length,
+        stealableCrew(state, seat, initiator).length,
       );
       if (count === 0) {
-        log(state, `L'équipage de l'initiateur est vide — le Kraken repart bredouille.`);
+        log(state, `Aucune recrue à voler à l'initiateur — le Kraken repart bredouille.`);
         return;
       }
       state.stack.push({ kind: 'chooseRecruit', seat, fromSeat: initiator, count, action: 'steal', reason: 'kraken' });
@@ -364,7 +401,7 @@ function playCurseEffect(state: GameState, seat: number, curse: CurseCard, rng: 
       log(state, `${playerAt(state, seat).displayName} s'échappe vers l'Île Brumeuse.`);
       if (bonusActive(state, [seat], curse.bonusIcon)) {
         const initiator = f.attackers[0]!;
-        const count = Math.min(1, playerAt(state, initiator).crew.length);
+        const count = Math.min(1, stealableCrew(state, seat, initiator).length);
         if (count > 0) {
           state.stack.push({
             kind: 'chooseRecruit',
@@ -383,11 +420,17 @@ function playCurseEffect(state: GameState, seat: number, curse: CurseCard, rng: 
 
 // ---- Auto-resolution for disconnected seats ---------------------------------------------
 
+/** A revealed event `seat` is allowed to pick (one Capitaine per ship, gameplay.md §3). */
+function pickable(state: GameState, seat: number, card: EventCard): boolean {
+  return !(card.type === 'recruit' && card.kind === 'capitaine' && hasCaptain(playerAt(state, seat)));
+}
+
 function autoPick(state: GameState, seat: number, rng: Rng): void {
+  // Callers guarantee at least one pickable card exists (advance() skips the pick otherwise).
   const card =
-    state.revealed.find((c) => c.type === 'recruit') ??
+    state.revealed.find((c) => c.type === 'recruit' && pickable(state, seat, c)) ??
     state.revealed.find((c) => c.type === 'raid') ??
-    state.revealed[0]!;
+    state.revealed.find((c) => pickable(state, seat, c))!;
   applyPickEvent(state, seat, card.id, rng);
 }
 
@@ -538,6 +581,14 @@ export function advance(state: GameState, rng: Rng): void {
           pop(state);
           continue;
         }
+        // One Capitaine per ship: if every remaining event is an unpickable second
+        // Capitaine, the seat skips its pick (gameplay.md §13 ruling) — never deadlock.
+        if (!state.revealed.some((c) => pickable(state, f.seat, c))) {
+          log(state, `${playerAt(state, f.seat).displayName} ne peut recruter un second Capitaine — choix passé.`);
+          state.pickQueue.shift();
+          pop(state);
+          continue;
+        }
         if (!playerAt(state, f.seat).connected) {
           autoPick(state, f.seat, rng);
           continue;
@@ -554,14 +605,15 @@ export function advance(state: GameState, rng: Rng): void {
       }
 
       case 'chooseRecruit': {
-        const source = playerAt(state, f.fromSeat);
-        const count = Math.min(f.count, source.crew.length);
+        const pool =
+          f.action === 'steal' ? stealableCrew(state, f.seat, f.fromSeat) : playerAt(state, f.fromSeat).crew;
+        const count = Math.min(f.count, pool.length);
         if (count === 0) {
           pop(state);
           continue;
         }
         if (!playerAt(state, f.seat).connected) {
-          applyChooseRecruit(state, f.seat, source.crew.slice(0, count).map((c) => c.id), f);
+          applyChooseRecruit(state, f.seat, pool.slice(0, count).map((c) => c.id), f);
           continue;
         }
         return;
@@ -612,6 +664,7 @@ function applyPickEvent(state: GameState, seat: number, cardId: string, rng: Rng
   const i = state.revealed.findIndex((c) => c.id === cardId);
   const card = i >= 0 ? state.revealed[i] : undefined;
   if (!card) throw new RuleError("Cet événement n'est pas disponible.");
+  if (!pickable(state, seat, card)) throw new RuleError('Un seul Capitaine par navire !');
   state.revealed.splice(i, 1);
   state.pickQueue.shift();
   pop(state); // pickEvent frame
@@ -648,11 +701,16 @@ function applyChooseRecruit(
   f: Extract<Frame, { kind: 'chooseRecruit' }>,
 ): void {
   const source = playerAt(state, f.fromSeat);
-  const count = Math.min(f.count, source.crew.length);
+  // Steals cannot take a Capitaine when the thief already has one (gameplay.md §3).
+  const pool = f.action === 'steal' ? stealableCrew(state, seat, f.fromSeat) : source.crew;
+  const count = Math.min(f.count, pool.length);
   if (cardIds.length !== count) throw new RuleError(`Choisissez ${count} recrue${count > 1 ? 's' : ''}.`);
   const picked = cardIds.map((id) => {
-    const card = source.crew.find((c) => c.id === id);
-    if (!card) throw new RuleError('Recrue introuvable.');
+    const card = pool.find((c) => c.id === id);
+    if (!card) {
+      if (source.crew.some((c) => c.id === id)) throw new RuleError('Un seul Capitaine par navire !');
+      throw new RuleError('Recrue introuvable.');
+    }
     return card;
   });
   if (new Set(cardIds).size !== cardIds.length) throw new RuleError('Recrues en double.');
@@ -824,11 +882,15 @@ export function applyMove(state: GameState, userId: string, move: Move, rng: Rng
       const steals = f.stealsPerWinner;
       pop(state); // pairSteal
       const parent = top(state);
-      if (parent?.kind === 'boardingResolve') pop(state);
-      state.stack.push({
-        kind: 'stealExec',
-        ops: pairing.map((p) => ({ thief: p.winner, victim: p.loser, count: steals })),
-      });
+      if (parent?.kind === 'boardingResolve') {
+        queueSteals(state, parent, pairing); // also emits the combat report
+      } else {
+        // Defensive: should not happen (pairSteal always sits on its boardingResolve).
+        state.stack.push({
+          kind: 'stealExec',
+          ops: pairing.map((p) => ({ thief: p.winner, victim: p.loser, count: steals })),
+        });
+      }
       break;
     }
     default:

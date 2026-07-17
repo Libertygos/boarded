@@ -7,7 +7,7 @@
  * Masters live in /cards/<name>.png (880×1232, immutable); in-game variants in
  * /cards/w440/<name>.webp.
  */
-import type { Corner, EventCard, TreasureCard, Value } from '@boarded/engine';
+import type { EventCard, TreasureCard, Value } from '@boarded/engine';
 import { CORNER_LABEL, CURSE_LABEL, RECRUIT_LABEL, TALISMAN_LABEL, VALUE_LABEL } from '@boarded/engine';
 
 export interface CardArt {
@@ -137,7 +137,10 @@ function grantsText(card: EventCard & { type: 'recruit' }): string {
 }
 
 export function eventEffect(card: EventCard): string {
-  if (card.type === 'recruit') return `${grantsText(card)} pour votre équipage.`;
+  if (card.type === 'recruit') {
+    const unique = card.kind === 'capitaine' ? ' Un seul Capitaine par navire !' : '';
+    return `${grantsText(card)} pour votre équipage.${unique}`;
+  }
   if (card.type === 'raid') return 'Piochez 1 trésor. Bonus (≥4) : piochez-en 2.';
   return card.mode === '2v2'
     ? 'Choisissez un partenaire : totaux d’équipe, le plus haut l’emporte. Chaque vainqueur vole 1 trésor — 2 avec le bonus d’équipe (≥8).'
@@ -169,10 +172,3 @@ export function treasureEffect(card: TreasureCard): string {
   return TALISMAN_EFFECT[card.talisman] ?? '';
 }
 
-/** Corner-highlight placement for corner cards (full-map treatment, ruling in progress_home.md). */
-export const CORNER_POS: Record<Corner, { top?: string; bottom?: string; left?: string; right?: string }> = {
-  HG: { top: '4%', left: '5%' },
-  HD: { top: '4%', right: '5%' },
-  BG: { bottom: '4%', left: '5%' },
-  BD: { bottom: '4%', right: '5%' },
-};

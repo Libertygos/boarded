@@ -86,7 +86,10 @@ export const fr = {
     choisirCible: "Choisissez le navire à aborder.",
     choisirPartenaire: 'Choisissez votre partenaire (2 contre 2).',
     fenetreMaledictionTitre: 'Jouer une malédiction ?',
+    fenetreMaledictionAstuce: 'Cliquez sur une carte pour la lire avant de décider.',
     passer: 'Passer',
+    jouer: 'Jouer',
+    ignorer: 'Ignorer',
     egalite: 'Égalité ! En tant que Maître du Vent, désignez le vainqueur.',
     attaquants: 'Attaquants',
     defenseurs: 'Défenseurs',
@@ -110,13 +113,24 @@ export const fr = {
     bonusActif: (v: string) => `Bonus ${v} actif (≥ 4) — les cartes à icône ${v} sont renforcées.`,
     agrandir: (titre: string) => `Agrandir ${titre}`,
   },
+  combat: {
+    titre: "Résolution de l'abordage",
+    titreContre: 'Contre-Abordage !',
+    total: 'Total',
+    egalite: 'Égalité — le Maître du Vent a tranché.',
+    remporte: (names: string) => `${names} remporte l'abordage !`,
+    bonus: 'Bonus actif — les vols sont doublés.',
+    vole: (voleur: string, victime: string, n: number) =>
+      `${voleur} vole ${n} trésor${n > 1 ? 's' : ''} à ${victime}.`,
+    continuer: 'Continuer',
+  },
   aide: {
     bouton: 'Aide',
     evenements: {
       titre: 'Les événements',
       corps: [
         'À chaque manche, les 4 premières cartes du paquet Événements sont révélées face visible. En commençant par le Maître du Vent puis dans le sens horaire, chaque joueur en choisit une et la résout immédiatement.',
-        'Recrutement : la recrue rejoint votre équipage et augmente vos valeurs (Sabres, Voiles, Canons, Pistolets).',
+        'Recrutement : la recrue rejoint votre équipage et augmente vos valeurs (Sabres, Voiles, Canons, Pistolets). Un seul Capitaine par navire : impossible d’en recruter — ou d’en voler — un second.',
         'Pillage : piochez 1 trésor — 2 si votre navire a au moins 4 unités de la valeur bonus de la carte.',
         "Abordage : attaquez un navire. Chaque camp additionne ses valeurs sur le profil de combat de la carte ; le plus haut total l'emporte et vole 1 trésor au perdant (2 avec le bonus). Égalité : le Maître du Vent tranche.",
         'À 2–3 joueurs, les événements restants retournent sous le paquet en fin de manche.',

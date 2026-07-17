@@ -20,6 +20,8 @@ export {
   profileTotal,
   bonusActive,
   hasAllCorners,
+  hasCaptain,
+  stealableCrew,
 } from './state.js';
 export { advance, applyMove, actingSeat } from './flow.js';
 export { createGame, type SeatInput } from './setup.js';

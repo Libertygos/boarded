@@ -10,6 +10,7 @@
  */
 import type {
   BoardingCard,
+  CombatReport,
   EventCard,
   Frame,
   GameState,
@@ -21,7 +22,7 @@ import type {
 } from './types.js';
 import { VALUES } from './types.js';
 import { actingSeat } from './flow.js';
-import { countValue, laggardSeat, playerAt } from './state.js';
+import { countValue, laggardSeat, playerAt, stealableCrew } from './state.js';
 
 export interface SelfView {
   seatId: number;
@@ -87,6 +88,8 @@ export interface PlayerProjection {
   treasureDeckCount: number;
   treasureDiscard: TreasureCard[];
   boarding: BoardingView | null;
+  /** Latest resolved boarding (public) — clients diff `seq` to animate the resolution. */
+  combat: CombatReport | null;
   pending: PendingView;
   log: LogEntry[];
 }
@@ -139,15 +142,19 @@ function pendingFor(state: GameState, seat: number): PendingView {
         profile: f.profile,
       };
     }
-    case 'chooseRecruit':
+    case 'chooseRecruit': {
+      // Steals: a Capitaine the thief cannot take (already has one) is not offered.
+      const pool =
+        f.action === 'steal' ? stealableCrew(state, f.seat, f.fromSeat) : playerAt(state, f.fromSeat).crew.slice();
       return {
         kind: 'chooseRecruit',
         fromSeat: f.fromSeat,
-        count: Math.min(f.count, playerAt(state, f.fromSeat).crew.length),
+        count: Math.min(f.count, pool.length),
         action: f.action,
         reason: f.reason,
-        choices: playerAt(state, f.fromSeat).crew.slice(),
+        choices: pool,
       };
+    }
     case 'singeDore':
       return { kind: 'singeDore', remaining: f.remaining, asked: f.asked };
     case 'contreAbordage':
@@ -217,6 +224,7 @@ export function project(state: GameState, userId: string): PlayerProjection {
     treasureDeckCount: state.treasureDeck.length,
     treasureDiscard: state.treasureDiscard,
     boarding: boardingView(state),
+    combat: state.lastCombat,
     pending: pendingFor(state, seat),
     log: state.log.slice(-40),
   };

@@ -134,6 +134,12 @@ export type Frame =
       /** Tie winner side once decided. */
       winners?: number[];
       losers?: number[];
+      /** Combat snapshot for the resolution report (set when the totals are computed). */
+      totals?: { atk: number; def: number };
+      contributions?: Record<number, Partial<ValueCounts>>;
+      tie?: boolean;
+      /** Winning side's bonus state (set by finishCombat). */
+      bonus?: boolean;
     }
   | {
       kind: 'curseWindow';
@@ -189,6 +195,33 @@ export interface LogEntry {
   text: string;
 }
 
+/**
+ * Public summary of a resolved boarding, emitted when the steals are queued. Everything
+ * in it is public information (crews and steal counts are public). `seq` is monotonic so
+ * clients can diff projections and animate only newly-resolved combats.
+ */
+export interface CombatReport {
+  seq: number;
+  /** true for a Contre-Abordage counter-boarding (no boarding card). */
+  counter: boolean;
+  attackers: number[];
+  /** Active defenders at combat time (escaped seats excluded). */
+  defenders: number[];
+  profile: Value[];
+  /** Per-seat counts on the profile values, snapshotted at combat resolution. */
+  contributions: Record<number, Partial<ValueCounts>>;
+  atkTotal: number;
+  defTotal: number;
+  /** true when the totals tied and the Master decided. */
+  tie: boolean;
+  winners: number[];
+  losers: number[];
+  /** Winning side's bonus was active (steals doubled). */
+  bonus: boolean;
+  /** Steals as queued (a steal can still fizzle on an empty hand). */
+  steals: Array<{ thief: number; victim: number; count: number }>;
+}
+
 export interface GameState {
   matchId: string;
   status: MatchStatus;
@@ -211,6 +244,10 @@ export interface GameState {
   stack: Frame[];
   /** Private unicast reveals for the server to drain (Longue-vue). Never projected. */
   reveals: PrivateReveal[];
+  /** Latest resolved boarding, for the client-side resolution animation. */
+  lastCombat: CombatReport | null;
+  /** Monotonic combat-report counter. */
+  combatSeq: number;
   log: LogEntry[];
   /** Monotonic log-entry counter (survives the log's own size cap). */
   logSeq: number;

@@ -2,7 +2,7 @@
  * State helpers: value counts, bonus checks, deck draws with reshuffle, treasure gain with
  * the state-based win check (gameplay.md §8.1/§9), seat arithmetic.
  */
-import type { GameState, PlayerState, TreasureCard, Value } from './types.js';
+import type { GameState, PlayerState, RecruitCard, TreasureCard, Value } from './types.js';
 import { BONUS_THRESHOLD_SOLO, BONUS_THRESHOLD_TEAM, CORNERS } from './types.js';
 import { shuffle } from './rng.js';
 
@@ -31,6 +31,18 @@ export function laggardSeat(state: GameState): number {
 export function seatsFrom(state: GameState, from: number): number[] {
   const n = seatCount(state);
   return Array.from({ length: n }, (_, i) => (from + i) % n);
+}
+
+/** One Capitaine per ship (gameplay.md §3). */
+export function hasCaptain(p: PlayerState): boolean {
+  return p.crew.some((c) => c.kind === 'capitaine');
+}
+
+/** Recruits `thief` may take from `fromSeat`'s crew — a Capitaine is excluded when the
+ * thief already has one (gameplay.md §3: one Capitaine per ship). */
+export function stealableCrew(state: GameState, thief: number, fromSeat: number): RecruitCard[] {
+  const crew = playerAt(state, fromSeat).crew;
+  return hasCaptain(playerAt(state, thief)) ? crew.filter((c) => c.kind !== 'capitaine') : crew.slice();
 }
 
 export function countValue(p: PlayerState, value: Value): number {

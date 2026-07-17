@@ -4,14 +4,14 @@
  * NEVER lives in the PNG). Purely presentational; interactivity is the parent's job
  * (wrap in a <button className="carte-btn">).
  *
- * Corner cards: full treasure map + a vermillion corner ring on the named corner
- * (ruling logged in progress_home.md — quadrant crops would strand the red X on 3 cards).
+ * Corner cards: each card shows its QUADRANT of the treasure map (CSS crop of the full
+ * master — Jules's ruling 2026-07-17, supersedes the earlier full-map + ring treatment).
+ * The winning screen reunites the four quadrants into the complete map.
  */
 import type { CardArt } from './art.js';
 import {
   BACK_EVENTS,
   BACK_TREASURES,
-  CORNER_POS,
   MASTER_OF_WINDS,
   eventArt,
   eventEffect,
@@ -97,13 +97,12 @@ export function TreasureCardImage({ card, size = 'md' }: { card: TreasureCard; s
   const art = treasureArt(card);
   const title = treasureTitle(card);
   return (
-    <Frame size={size} className={card.type === 'corner' ? 'carte-coin' : ''}>
+    <Frame size={size} className={card.type === 'corner' ? `carte-coin coin-${card.corner}` : ''}>
       <Art art={art} alt={title} size={size} />
       {card.type === 'curse' && <BonusBadge value={card.bonusIcon} />}
       {card.type === 'talisman' && card.talisman === 'contre-abordage' && card.value && (
         <PipBand values={[card.value]} />
       )}
-      {card.type === 'corner' && <span className="coin-marque" style={CORNER_POS[card.corner]} aria-hidden />}
       <figcaption className="carte-textes">
         <span className="carte-titre">{title}</span>
         <span className="carte-effet">{treasureEffect(card)}</span>

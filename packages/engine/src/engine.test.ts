@@ -66,6 +66,8 @@ function makeState(n: number): GameState {
     pickQueue: [],
     stack: [],
     reveals: [],
+    lastCombat: null,
+    combatSeq: 0,
     log: [],
     logSeq: 0,
   };
@@ -176,6 +178,110 @@ describe('boarding (gameplay.md §7.3)', () => {
   });
 });
 
+function captain(tag: string): RecruitCard {
+  return {
+    id: `t-capitaine-${tag}`,
+    type: 'recruit',
+    kind: 'capitaine',
+    grants: { sabres: 1, voiles: 1, canons: 1, pistolets: 1 },
+  };
+}
+
+describe('combat report (client resolution animation)', () => {
+  it('publishes totals, contributions, winners and steals when a boarding resolves', () => {
+    const rng = makeRng(7);
+    const state = makeState(2);
+    playerAt(state, 0).crew = recruit('canonnier', 3);
+    playerAt(state, 1).treasures = [corner('HG')];
+    startBoarding(state, boarding1v1CanonsPistolets, rng);
+    applyMove(state, 'u0', { type: 'CHOOSE_BOARDING', targetSeat: 1 }, rng);
+    const report = state.lastCombat;
+    assert.ok(report);
+    assert.equal(report.seq, 1);
+    assert.equal(report.counter, false);
+    assert.deepEqual(report.attackers, [0]);
+    assert.deepEqual(report.defenders, [1]);
+    assert.equal(report.atkTotal, 3);
+    assert.equal(report.defTotal, 0);
+    assert.deepEqual(report.contributions[0], { canons: 3, pistolets: 0 });
+    assert.equal(report.tie, false);
+    assert.deepEqual(report.winners, [0]);
+    assert.deepEqual(report.losers, [1]);
+    assert.deepEqual(report.steals, [{ thief: 0, victim: 1, count: 1 }]);
+    assert.equal(project(state, 'u1').combat?.seq, 1);
+  });
+
+  it('no report when an Île Brumeuse escape cancels the boarding', () => {
+    const rng = makeRng(7);
+    const state = makeState(2);
+    playerAt(state, 0).crew = recruit('canonnier', 3);
+    const brumeuse: TreasureCard = { id: 'c-brum2', type: 'curse', curse: 'ile-brumeuse', bonusIcon: 'voiles' };
+    playerAt(state, 1).treasures = [brumeuse];
+    startBoarding(state, boarding1v1CanonsPistolets, rng);
+    applyMove(state, 'u0', { type: 'CHOOSE_BOARDING', targetSeat: 1 }, rng);
+    applyMove(state, 'u1', { type: 'PLAY_CURSE', cardId: 'c-brum2' }, rng);
+    assert.equal(state.lastCombat, null);
+  });
+});
+
+describe('one Capitaine per ship (gameplay.md §3)', () => {
+  it('rejects picking a second Capitaine', () => {
+    const rng = makeRng(7);
+    const state = makeState(2);
+    playerAt(state, 0).crew = [captain('owned')];
+    const second = captain('revealed');
+    state.revealed = [second, ...recruit('matelot', 1)];
+    state.pickQueue = [0, 1];
+    advance(state, rng);
+    assert.throws(
+      () => applyMove(state, 'u0', { type: 'PICK_EVENT', cardId: second.id }, rng),
+      /Capitaine/,
+    );
+    // the pick is still open and another card remains legal
+    assert.equal(actingSeat(state), 0);
+  });
+
+  it('skips the pick when only unpickable Capitaines remain', () => {
+    const rng = makeRng(7);
+    const state = makeState(2);
+    playerAt(state, 0).crew = [captain('owned')];
+    state.revealed = [captain('r1')];
+    state.pickQueue = [0];
+    advance(state, rng);
+    // seat 0 could not pick anything; seat 0's turn was skipped and the round ended
+    assert.equal(playerAt(state, 0).crew.length, 1);
+    assert.ok(state.log.some((e) => e.text.includes('second Capitaine')));
+  });
+
+  it('Kraken steal cannot take the initiator\'s Capitaine when the owner has one', () => {
+    const rng = makeRng(7);
+    const state = makeState(3);
+    // Initiator (seat 0) crew: captain + 1 matelot; kraken owner (seat 2) already has a captain.
+    const initiatorCaptain = captain('init');
+    playerAt(state, 0).crew = [initiatorCaptain, ...recruit('matelot', 1)];
+    playerAt(state, 2).crew = [captain('mine')];
+    const kraken: TreasureCard = { id: 'c-krak2', type: 'curse', curse: 'kraken', bonusIcon: 'canons' };
+    playerAt(state, 2).treasures = [kraken];
+    startBoarding(state, boarding1v1CanonsPistolets, rng);
+    applyMove(state, 'u0', { type: 'CHOOSE_BOARDING', targetSeat: 1 }, rng);
+    assert.equal(actingSeat(state), 2); // kraken window
+    applyMove(state, 'u2', { type: 'PLAY_CURSE', cardId: 'c-krak2' }, rng);
+    const proj = project(state, 'u2');
+    assert.equal(proj.pending.kind, 'chooseRecruit');
+    if (proj.pending.kind === 'chooseRecruit') {
+      assert.ok(!proj.pending.choices.some((c) => c.kind === 'capitaine'));
+    }
+    assert.throws(
+      () => applyMove(state, 'u2', { type: 'CHOOSE_RECRUIT', cardIds: [initiatorCaptain.id] }, rng),
+      /Capitaine/,
+    );
+    const matelotId = playerAt(state, 0).crew.find((c) => c.kind === 'matelot')!.id;
+    applyMove(state, 'u2', { type: 'CHOOSE_RECRUIT', cardIds: [matelotId] }, rng);
+    assert.equal(playerAt(state, 2).crew.length, 2);
+    assert.ok(playerAt(state, 0).crew.some((c) => c.kind === 'capitaine')); // captain stayed
+  });
+});
+
 describe('projection (gameplay.md §11)', () => {
   it('never serializes another seat\'s treasure hand; counts are public', () => {
     const state = makeState(3);
@@ -230,8 +336,14 @@ describe('full match smoke (seeded bot)', () => {
 function botMove(proj: ReturnType<typeof project>, state: GameState, seat: number): Move {
   const p = proj.pending;
   switch (p.kind) {
-    case 'pickEvent':
-      return { type: 'PICK_EVENT', cardId: proj.revealed[0]!.id };
+    case 'pickEvent': {
+      // One Capitaine per ship: skip a second Capitaine like a real player would.
+      const ownsCaptain = proj.self.crew.some((c) => c.kind === 'capitaine');
+      const card =
+        proj.revealed.find((c) => !(c.type === 'recruit' && c.kind === 'capitaine' && ownsCaptain)) ??
+        proj.revealed[0]!;
+      return { type: 'PICK_EVENT', cardId: card.id };
+    }
     case 'boardingTarget': {
       const others = proj.opponents.map((o) => o.seatId);
       if ((p.card as BoardingCard).mode === '2v2' && !p.as1v1) {

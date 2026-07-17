@@ -249,7 +249,9 @@ input::placeholder {
   user-select: none;
 }
 
-/* overlay text bands (quiet parchment zones baked into the composition) */
+/* overlay text bands — parchment scrims guarantee legibility over any art; the title
+   reads in dark vermillion ink, the effect in warm sepia (Jules: the old small black
+   text was hardly visible). */
 .carte-textes {
   position: absolute;
   inset: 0;
@@ -262,36 +264,38 @@ input::placeholder {
 }
 .carte-titre {
   font-family: var(--affiche);
-  color: var(--texte-encre);
-  padding: 3.5% 16% 0;
+  color: #7e2a1c;
+  padding: 3.5% 12% 3.5%;
   line-height: 1.05;
-  text-shadow: 0 0 6px rgba(242, 234, 216, 0.9);
+  background: linear-gradient(rgba(242, 234, 216, 0.94) 55%, rgba(242, 234, 216, 0.6) 82%, rgba(242, 234, 216, 0));
+  text-shadow: 0 1px 0 rgba(242, 234, 216, 0.85);
 }
 .carte-effet {
   font-family: var(--plume);
   font-style: italic;
-  color: var(--texte-encre);
-  padding: 0 7% 4.5%;
-  line-height: 1.18;
-  text-shadow: 0 0 5px rgba(242, 234, 216, 0.9);
+  color: #332612;
+  padding: 4.5% 6% 4.5%;
+  line-height: 1.22;
+  background: linear-gradient(rgba(242, 234, 216, 0), rgba(242, 234, 216, 0.65) 22%, rgba(242, 234, 216, 0.95));
+  text-shadow: 0 0 4px rgba(242, 234, 216, 0.9);
 }
 .carte-md .carte-titre {
-  font-size: 16px;
+  font-size: 19px;
 }
 .carte-md .carte-effet {
-  font-size: 11px;
+  font-size: 13px;
 }
 .carte-sm .carte-titre {
-  font-size: 12.5px;
+  font-size: 15px;
 }
 .carte-sm .carte-effet {
-  font-size: 9px;
+  font-size: 10.5px;
 }
 .carte-lg .carte-titre {
-  font-size: 26px;
+  font-size: 30px;
 }
 .carte-lg .carte-effet {
-  font-size: 15px;
+  font-size: 19px;
 }
 .carte-xs .carte-titre,
 .carte-xs .carte-effet {
@@ -410,18 +414,29 @@ input::placeholder {
   display: none;
 }
 
-/* corner cards: full map + vermillion ring on the named corner */
-.coin-marque {
+/* corner cards: each card is its QUADRANT of the treasure map (CSS crop of the master —
+   the four cards visually reassemble the full map when the corners are reunited). */
+.carte-coin .carte-art {
   position: absolute;
-  width: 27%;
-  aspect-ratio: 1;
-  border: 3px dashed var(--canons);
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(192, 67, 47, 0.3), inset 0 0 12px rgba(192, 67, 47, 0.35);
+  width: 200%;
+  height: 200%;
+  max-width: none;
 }
-.carte-coin .carte-titre {
-  background: linear-gradient(rgba(242, 234, 216, 0.88), rgba(242, 234, 216, 0));
-  padding-bottom: 2%;
+.coin-HG .carte-art {
+  top: 0;
+  left: 0;
+}
+.coin-HD .carte-art {
+  top: 0;
+  right: 0;
+}
+.coin-BG .carte-art {
+  bottom: 0;
+  left: 0;
+}
+.coin-BD .carte-art {
+  bottom: 0;
+  right: 0;
 }
 
 /* face-down piles */
@@ -869,15 +884,101 @@ input::placeholder {
   text-align: center;
   align-items: center;
 }
-.fin-embleme {
-  display: flex;
-  gap: 14px;
-  justify-content: center;
+
+/* Winning screen: the four map quadrants fly back together into the complete map. */
+.fin-carte {
+  position: relative;
+  width: min(230px, 58vw);
+  aspect-ratio: 5 / 7;
+  margin: 0 auto 6px;
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.35));
 }
-.fin-embleme img {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
+.fin-quart {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  overflow: hidden;
+  animation: quart-reunit 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.fin-quart img {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  object-fit: cover;
+  user-select: none;
+}
+.fin-quart-HG {
+  top: 0;
+  left: 0;
+  border-radius: 8px 0 0 0;
+  --dx: -55%;
+  --dy: -55%;
+  --rot: -8deg;
+  animation-delay: 0.15s;
+}
+.fin-quart-HG img {
+  top: 0;
+  left: 0;
+}
+.fin-quart-HD {
+  top: 0;
+  right: 0;
+  border-radius: 0 8px 0 0;
+  --dx: 55%;
+  --dy: -55%;
+  --rot: 8deg;
+  animation-delay: 0.4s;
+}
+.fin-quart-HD img {
+  top: 0;
+  right: 0;
+}
+.fin-quart-BG {
+  bottom: 0;
+  left: 0;
+  border-radius: 0 0 0 8px;
+  --dx: -55%;
+  --dy: 55%;
+  --rot: 6deg;
+  animation-delay: 0.65s;
+}
+.fin-quart-BG img {
+  bottom: 0;
+  left: 0;
+}
+.fin-quart-BD {
+  bottom: 0;
+  right: 0;
+  border-radius: 0 0 8px 0;
+  --dx: 55%;
+  --dy: 55%;
+  --rot: -6deg;
+  animation-delay: 0.9s;
+}
+.fin-quart-BD img {
+  bottom: 0;
+  right: 0;
+}
+@keyframes quart-reunit {
+  from {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+  }
+}
+/* Once assembled, the reunited map settles with an inked outline and a brief glow. */
+.fin-carte::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px var(--texte-encre), 0 0 34px rgba(192, 67, 47, 0.5);
+  opacity: 0;
+  animation: carte-reunie 0.7s ease-out 1.9s both;
+}
+@keyframes carte-reunie {
+  to {
+    opacity: 1;
+  }
 }
 
 /* =====================================================================
@@ -1103,6 +1204,102 @@ input::placeholder {
 }
 
 /* =====================================================================
+   Boarding resolution reveal — staged combat math on a parchment panel
+   ===================================================================== */
+.panneau-combat {
+  min-width: min(92vw, 440px);
+  text-align: center;
+  align-items: center;
+  gap: 14px;
+}
+.combat-titre {
+  margin: 0;
+  font-family: var(--affiche);
+  font-weight: 400;
+  font-size: 1.7rem;
+  letter-spacing: 0.04em;
+  color: var(--canons);
+}
+.combat-tableau {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+}
+.combat-ligne {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  animation: combat-ligne-entre 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.combat-ligne > :first-child {
+  justify-self: end;
+}
+.combat-ligne > :last-child {
+  justify-self: start;
+}
+@keyframes combat-ligne-entre {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+/* camp chips inherit dark-table colors; re-ink them for the parchment panel */
+.panneau-combat .camp-attaque {
+  color: #a83a28;
+}
+.panneau-combat .camp-defense {
+  color: var(--voiles);
+}
+.combat-vs {
+  font-style: italic;
+  color: var(--texte-encre-faible);
+}
+.combat-valeur img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+.combat-nombre {
+  font-family: var(--affiche);
+  font-size: 1.5rem;
+  color: var(--texte-encre);
+  font-variant-numeric: tabular-nums;
+}
+.combat-totaux {
+  border-top: 1.5px solid var(--filet-parchemin);
+  padding-top: 9px;
+}
+.combat-totaux .combat-nombre {
+  font-size: 2rem;
+}
+.combat-gagnant {
+  color: var(--canons);
+  text-shadow: 0 0 12px rgba(192, 67, 47, 0.35);
+}
+.combat-verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: combat-ligne-entre 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.combat-verdict p {
+  margin: 0;
+}
+.combat-vainqueur {
+  font-family: var(--affiche);
+  font-size: 1.3rem;
+}
+.combat-vol {
+  font-style: italic;
+}
+.combat-verdict .btn {
+  margin-top: 8px;
+}
+
+/* =====================================================================
    Announcements — transient public-event toasts
    ===================================================================== */
 .annonces {
@@ -1240,10 +1437,10 @@ input::placeholder {
     width: 138px;
   }
   .carte-md .carte-titre {
-    font-size: 13px;
+    font-size: 15px;
   }
   .carte-md .carte-effet {
-    font-size: 9px;
+    font-size: 11px;
   }
   .jeu-pioches {
     order: 3;

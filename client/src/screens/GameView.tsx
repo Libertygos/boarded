@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type {
   BoardingCard,
   BoardingView,
+  CombatReport,
   Corner,
   LogEntry,
   Move,
@@ -29,7 +30,7 @@ import {
 } from '@boarded/engine';
 import { fr } from '../i18n/fr.js';
 import { CardBack, EventCardImage, TreasureCardImage } from '../cards/CardImage.js';
-import { treasureTitle, valueIcon } from '../cards/art.js';
+import { MAP_TREASURE, treasureTitle, valueIcon } from '../cards/art.js';
 
 export function GameView({
   proj,
@@ -72,6 +73,7 @@ export function GameView({
   const [zoom, setZoom] = useState<TreasureCard | null>(null);
 
   const annonces = useAnnonces(proj.log);
+  const [combatReveal, dismissCombat] = useCombatReveal(proj);
 
   // Deal animation: fix each revealed card's stagger delay at reveal time (per round) so
   // later re-renders — cards leaving as they get picked — never restart the animation.
@@ -222,6 +224,10 @@ export function GameView({
         </div>
       )}
 
+      {combatReveal && (
+        <CombatReveal key={combatReveal.seq} report={combatReveal} nameOf={nameOf} onClose={dismissCombat} />
+      )}
+
       {reveal && (
         <div className="voile" onClick={onRevealDismiss}>
           <div className="panneau panneau-revelation" onClick={(e) => e.stopPropagation()}>
@@ -242,9 +248,12 @@ export function GameView({
       {over && (
         <div className="voile">
           <div className="panneau panneau-fin">
-            <div className="fin-embleme">
-              {VALUES.map((v) => (
-                <img key={v} src={valueIcon(v)} alt="" aria-hidden />
+            {/* The four map corners fly back together into the complete treasure map. */}
+            <div className="fin-carte" aria-hidden>
+              {CORNERS.map((c) => (
+                <span key={c} className={`fin-quart fin-quart-${c}`}>
+                  <img src={MAP_TREASURE.webp} alt="" draggable={false} />
+                </span>
               ))}
             </div>
             <h2>
@@ -294,6 +303,102 @@ function useAnnonces(log: LogEntry[]): LogEntry[] {
     }, 8000);
   }, [log]);
   return items;
+}
+
+// ---- boarding resolution reveal ---------------------------------------------------
+
+/** Surfaces a newly-resolved combat (projection diff on `combat.seq`). The first
+ * projection only records the high-water mark, so a reconnect never replays it. */
+function useCombatReveal(proj: PlayerProjection): [CombatReport | null, () => void] {
+  const [report, setReport] = useState<CombatReport | null>(null);
+  const lastSeen = useRef<number | null>(null);
+  useEffect(() => {
+    const seq = proj.combat?.seq ?? 0;
+    if (lastSeen.current === null) {
+      lastSeen.current = seq;
+      return;
+    }
+    if (proj.combat && seq > lastSeen.current) {
+      lastSeen.current = seq;
+      setReport(proj.combat);
+    }
+  }, [proj]);
+  return [report, () => setReport(null)];
+}
+
+/**
+ * The boarding resolution box, played as a staged animation: the two sides face off,
+ * then each profile value is added to both columns, then the totals, then the verdict
+ * (winner + who got robbed). A click anywhere skips to the end; a second click closes.
+ */
+function CombatReveal({
+  report,
+  nameOf,
+  onClose,
+}: {
+  report: CombatReport;
+  nameOf: (seat: number) => string;
+  onClose: () => void;
+}) {
+  // Steps: 1 = sides, 2..1+n = one profile value each, 2+n = totals, 3+n = verdict.
+  const lastStep = report.profile.length + 3;
+  const [step, setStep] = useState(1);
+  useEffect(() => {
+    if (step >= lastStep) return;
+    const t = setTimeout(() => setStep((s) => s + 1), step === 1 ? 1000 : 900);
+    return () => clearTimeout(t);
+  }, [step, lastStep]);
+
+  const sideCount = (seats: number[], v: Value) =>
+    seats.reduce((acc, s) => acc + (report.contributions[s]?.[v] ?? 0), 0);
+  const rowsShown = Math.min(step - 1, report.profile.length);
+  const totalsShown = step >= report.profile.length + 2;
+  const done = step >= lastStep;
+  const atkWon = report.winners.some((s) => report.attackers.includes(s));
+
+  return (
+    <div className="voile" onClick={() => (done ? onClose() : setStep(lastStep))}>
+      <div className="panneau panneau-combat" onClick={(e) => e.stopPropagation()}>
+        <h3 className="combat-titre">{report.counter ? fr.combat.titreContre : fr.combat.titre}</h3>
+        <div className="combat-tableau">
+          <div className="combat-ligne combat-camps">
+            <span className="camp camp-attaque">⚔ {report.attackers.map(nameOf).join(' + ')}</span>
+            <span className="combat-vs">{fr.jeu.contre}</span>
+            <span className="camp camp-defense">🛡 {report.defenders.map(nameOf).join(' + ')}</span>
+          </div>
+          {report.profile.slice(0, rowsShown).map((v, i) => (
+            <div key={`${v}-${i}`} className="combat-ligne combat-valeur">
+              <span className="combat-nombre">{sideCount(report.attackers, v)}</span>
+              <img src={valueIcon(v)} alt={VALUE_LABEL[v]} title={VALUE_LABEL[v]} />
+              <span className="combat-nombre">{sideCount(report.defenders, v)}</span>
+            </div>
+          ))}
+          {totalsShown && (
+            <div className="combat-ligne combat-totaux">
+              <span className={`combat-nombre ${atkWon ? 'combat-gagnant' : ''}`}>{report.atkTotal}</span>
+              <span className="combat-vs">{fr.combat.total}</span>
+              <span className={`combat-nombre ${atkWon ? '' : 'combat-gagnant'}`}>{report.defTotal}</span>
+            </div>
+          )}
+        </div>
+        {done && (
+          <div className="combat-verdict">
+            {report.tie && <p className="texte-faible">{fr.combat.egalite}</p>}
+            <p className="combat-vainqueur">{fr.combat.remporte(report.winners.map(nameOf).join(' + '))}</p>
+            {report.bonus && <p className="texte-faible">{fr.combat.bonus}</p>}
+            {report.steals.map((s, i) => (
+              <p key={i} className="combat-vol">
+                {fr.combat.vole(nameOf(s.thief), nameOf(s.victim), s.count)}
+              </p>
+            ))}
+            <button className="btn btn-primaire" onClick={onClose}>
+              {fr.combat.continuer}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ---- boarding banner ---------------------------------------------------------------
@@ -464,9 +569,12 @@ function PendingPrompt({
   const p = proj.pending;
   const [selected, setSelected] = useState<string[]>([]);
   const [corner, setCorner] = useState<Corner | null>(null);
+  /** Curse window: the card being inspected full-size before the Jouer/Ignorer decision. */
+  const [curseZoom, setCurseZoom] = useState<TreasureCard | null>(null);
   useEffect(() => {
     setSelected([]);
     setCorner(null);
+    setCurseZoom(null);
   }, [proj]);
 
   if (proj.status === 'ended' || p.kind === 'none') return null;
@@ -521,14 +629,23 @@ function PendingPrompt({
     }
     case 'curseWindow': {
       const cardById = new Map(proj.self.treasures.map((t) => [t.id, t]));
+      // Clicking a curse zooms it (like a hand treasure) with an explicit Jouer/Ignorer
+      // decision — playing is never one accidental click.
       return (
         <div className="prompt">
           <strong>{fr.jeu.fenetreMaledictionTitre}</strong>
+          <span className="texte-faible">{fr.jeu.fenetreMaledictionAstuce}</span>
           <div className="choix choix-cartes">
             {p.playable.map((id) => {
               const card = cardById.get(id);
               return (
-                <button key={id} className="carte-btn" disabled={busy} onClick={() => act({ type: 'PLAY_CURSE', cardId: id })}>
+                <button
+                  key={id}
+                  className="carte-btn"
+                  disabled={busy}
+                  aria-label={card ? fr.jeu.agrandir(treasureTitle(card)) : undefined}
+                  onClick={() => card && setCurseZoom(card)}
+                >
                   {card ? <TreasureCardImage card={card} size="sm" /> : <span className="btn">?</span>}
                 </button>
               );
@@ -539,6 +656,25 @@ function PendingPrompt({
               {fr.jeu.passer}
             </button>
           </div>
+          {curseZoom && (
+            <div className="voile" onClick={() => setCurseZoom(null)}>
+              <div className="zoom-carte" onClick={(e) => e.stopPropagation()}>
+                <TreasureCardImage card={curseZoom} size="lg" />
+                <div className="choix">
+                  <button
+                    className="btn btn-primaire"
+                    disabled={busy}
+                    onClick={() => act({ type: 'PLAY_CURSE', cardId: curseZoom.id })}
+                  >
+                    {fr.jeu.jouer}
+                  </button>
+                  <button className="btn" onClick={() => setCurseZoom(null)}>
+                    {fr.jeu.ignorer}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }

@@ -60,6 +60,11 @@ Every ship (player) has four crew values, all starting at 0:
 
 Crew size is unlimited. Recruits stay until discarded by an effect. Discarded recruits go to the event discard pile.
 
+**One Capitaine per ship.** A ship can never hold more than one Capitaine:
+- A player who already has a Capitaine **cannot pick** a Capitaine in the event draft.
+- A recruit **steal** (Kraken, Île Brumeuse bonus) cannot take a Capitaine when the thief already has one — the Capitaine is excluded from the stealable pool (and from the steal count).
+- Discarding a Capitaine (Tourbillon, Coffre Piégé) is allowed; only *gaining* a second one is impossible.
+
 ---
 
 ## 4. Roles
@@ -109,7 +114,7 @@ Raid, Boarding, and Curse cards carry a **bonus icon** (one of the 4 values) and
 ## 7. Events
 
 ### 7.1 Recruitments (76 cards)
-Picked card joins the picker's crew. No other effect.
+Picked card joins the picker's crew. No other effect. A second Capitaine cannot be picked (§3: one Capitaine per ship).
 
 ### 7.2 Raids (8 cards; 2 per bonus icon)
 - **Effect**: draw 1 treasure.
@@ -260,6 +265,14 @@ Changing any of these requires a design sign-off + engine/test update in the sam
 - **Curse-window privacy**: other seats see a generic non-attributed wait while a curse
   window is open (naming the waiting seat would leak curse ownership). Timing inference
   remains possible; accepted for V1.
+- **One-Capitaine edge case**: if every event still available at a player's pick is a
+  Capitaine they cannot take, their pick is **skipped** (logged publicly). Recruit steals
+  where the only stealable recruit is an untakeable Capitaine fizzle the same way the
+  empty-crew case does.
+- **Boarding resolution report**: when a boarding's steals are queued, the engine publishes
+  a public combat summary (sides, per-seat profile values, totals, tie flag, winners,
+  planned steals) used by the client for the resolution animation. It contains public
+  information only.
 
 ---
 
