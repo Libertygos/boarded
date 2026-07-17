@@ -302,9 +302,11 @@ input::placeholder {
   display: none;
 }
 
-/* suit pips — emblem glyphs on a parchment roundel, top-left */
+/* suit pips — emblem glyphs on a parchment roundel, top-left.
+   z-index keeps them in front of the title band's parchment scrim. */
 .carte-pips {
   position: absolute;
+  z-index: 1;
   top: 2.6%;
   left: 3.6%;
   display: flex;
@@ -334,9 +336,11 @@ input::placeholder {
   height: 24px;
 }
 
-/* bonus badge — suit glyph in a hand-drawn ring with a "+", top-right */
+/* bonus badge — suit glyph in a hand-drawn ring with a "+", top-right.
+   z-index keeps it in front of the title band's parchment scrim. */
 .carte-bonus {
   position: absolute;
+  z-index: 1;
   top: 2.6%;
   right: 3.6%;
   display: flex;
