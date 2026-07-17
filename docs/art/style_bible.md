@@ -1,6 +1,6 @@
 # À l'abordage — Style Bible
 
-**Version:** 1.3.5 (2026-07-16)
+**Version:** 1.3.6 (2026-07-17)
 **Status:** FROZEN — any change requires a version bump + changelog entry.
 This document is the single visual authority. The Kaggle notebook mirrors
 STYLE_PREFIX verbatim; `art_manifest.csv` subject_prompts assume it is prepended.
@@ -158,6 +158,14 @@ flavor and immutable once approved.
   unless overridden.
 
 ## 8. Changelog
+
+- **1.3.6** (2026-07-17) — Final treasure map master is an EXTERNAL image
+  (ChatGPT Images, from the ratified prompt: dense engraved cartography,
+  ~60% land, red dashed three-corner route, single red X, no lettering),
+  installed as client/public/cards/map_treasure.png at 880x1232. All 10
+  firework boarding masters gated in. ART GENERATION COMPLETE — every
+  card face and back has an approved master; the Kaggle pipeline goes
+  dormant unless new cards are designed.
 
 - **1.3.5** (2026-07-16) — map_treasure_10 (seed 1372) LOCKED as the final
   treasure map master (client/public/cards/map_treasure.png). Boarding
