@@ -67,6 +67,7 @@ function makeState(n: number): GameState {
     stack: [],
     reveals: [],
     log: [],
+    logSeq: 0,
   };
 }
 

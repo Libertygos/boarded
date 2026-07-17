@@ -2,13 +2,34 @@
  * GameView — the gameroom. Renders ONLY the per-seat projection the server sends and
  * emits Move messages. Visuals: art masters + overlay via CardImage (style bible §5);
  * layout = ink table, parchment ship panels, event draft row, private treasure hand.
+ *
+ * Table feel: events are dealt with a staggered flip at each round, drawn treasures flip
+ * into the hand, and every new public log entry surfaces as a transient announcement so
+ * affected players see what just happened (log entries carry monotonic ids for the diff).
  */
-import { useEffect, useMemo, useState } from 'react';
-import type { BoardingCard, Corner, Move, PlayerProjection, PrivateReveal, Value } from '@boarded/engine';
-import { CORNERS, CORNER_LABEL, RECRUIT_LABEL, VALUE_LABEL, VALUES } from '@boarded/engine';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type {
+  BoardingCard,
+  BoardingView,
+  Corner,
+  LogEntry,
+  Move,
+  PlayerProjection,
+  PrivateReveal,
+  TreasureCard,
+  Value,
+} from '@boarded/engine';
+import {
+  BONUS_THRESHOLD_SOLO,
+  CORNERS,
+  CORNER_LABEL,
+  RECRUIT_LABEL,
+  VALUE_LABEL,
+  VALUES,
+} from '@boarded/engine';
 import { fr } from '../i18n/fr.js';
 import { CardBack, EventCardImage, TreasureCardImage } from '../cards/CardImage.js';
-import { valueIcon } from '../cards/art.js';
+import { treasureTitle, valueIcon } from '../cards/art.js';
 
 export function GameView({
   proj,
@@ -46,6 +67,32 @@ export function GameView({
   const over = proj.status === 'ended';
   const discardTop = proj.treasureDiscard[proj.treasureDiscard.length - 1];
 
+  /** Treasure zoom — hand cards are not playable by design (curse plays go through the
+   * dedicated prompt), so a click opens the card full size instead. */
+  const [zoom, setZoom] = useState<TreasureCard | null>(null);
+
+  const annonces = useAnnonces(proj.log);
+
+  // Deal animation: fix each revealed card's stagger delay at reveal time (per round) so
+  // later re-renders — cards leaving as they get picked — never restart the animation.
+  const dealDelays = useRef<Map<string, number>>(new Map());
+  const dealRound = useRef(-1);
+  if (dealRound.current !== proj.round) {
+    dealRound.current = proj.round;
+    dealDelays.current = new Map(proj.revealed.map((c, i) => [c.id, 0.1 + i * 0.16]));
+  }
+
+  // Draw animation: treasures that were not in the hand at the previous projection.
+  const prevTreasureIds = useRef<Set<string> | null>(null);
+  const freshTreasures = useMemo(() => {
+    const prev = prevTreasureIds.current;
+    if (!prev) return new Set<string>(); // first projection (incl. reconnect): no replay
+    return new Set(proj.self.treasures.filter((t) => !prev.has(t.id)).map((t) => t.id));
+  }, [proj]);
+  useEffect(() => {
+    prevTreasureIds.current = new Set(proj.self.treasures.map((t) => t.id));
+  }, [proj]);
+
   return (
     <div className="jeu">
       <header className="jeu-entete">
@@ -80,6 +127,10 @@ export function GameView({
         </p>
       )}
 
+      <div className="rubrique-rang">
+        <h3 className="rubrique">{fr.jeu.navires}</h3>
+        <AideZone sujet="navires" />
+      </div>
       <section className="rang-navires">
         <ShipPanel
           title={nameOf(proj.self.seatId)}
@@ -90,6 +141,7 @@ export function GameView({
           connected
           master={proj.self.seatId === proj.masterSeat}
           badges={shipBadges(proj, proj.self.seatId)}
+          combat={combatRole(proj.boarding, proj.self.seatId)}
         />
         {proj.opponents.map((o) => (
           <ShipPanel
@@ -101,18 +153,25 @@ export function GameView({
             connected={o.connected}
             master={o.seatId === proj.masterSeat}
             badges={shipBadges(proj, o.seatId)}
+            combat={combatRole(proj.boarding, o.seatId)}
           />
         ))}
       </section>
 
+      {proj.boarding && <AbordageBandeau b={proj.boarding} nameOf={nameOf} />}
+
       <section className="table-evenements">
-        <h3 className="rubrique">{fr.jeu.evenements}</h3>
+        <div className="rubrique-rang">
+          <h3 className="rubrique">{fr.jeu.evenements}</h3>
+          <AideZone sujet="evenements" />
+        </div>
         <div className="cartes cartes-evenements">
           {proj.revealed.length === 0 && <span className="texte-faible">—</span>}
           {proj.revealed.map((card) => (
             <button
               key={card.id}
-              className="carte-btn"
+              className="carte-btn carte-revelee"
+              style={{ animationDelay: `${dealDelays.current.get(card.id) ?? 0}s` }}
               disabled={proj.pending.kind !== 'pickEvent' || busy}
               onClick={() => act({ type: 'PICK_EVENT', cardId: card.id })}
             >
@@ -125,23 +184,43 @@ export function GameView({
       <PendingPrompt proj={proj} busy={busy} act={act} nameOf={nameOf} />
 
       <section className="main-tresors">
-        <h3 className="rubrique">{fr.jeu.tresors}</h3>
+        <div className="rubrique-rang">
+          <h3 className="rubrique">{fr.jeu.tresors}</h3>
+          <AideZone sujet="tresors" />
+        </div>
         <div className="cartes">
           {proj.self.treasures.length === 0 && <span className="texte-faible">{fr.jeu.mainVide}</span>}
           {proj.self.treasures.map((t) => (
-            <TreasureCardImage key={t.id} card={t} size="sm" />
+            <button
+              key={t.id}
+              className={`carte-btn ${freshTreasures.has(t.id) ? 'carte-nouvelle' : ''}`}
+              onClick={() => setZoom(t)}
+              aria-label={fr.jeu.agrandir(treasureTitle(t))}
+            >
+              <TreasureCardImage card={t} size="sm" />
+            </button>
           ))}
         </div>
       </section>
 
-      <section className="journal" aria-label={fr.jeu.journal}>
-        <h3 className="rubrique">{fr.jeu.journal}</h3>
-        <div className="journal-lignes">
-          {proj.log.map((entry, i) => (
-            <p key={i}>{entry.text}</p>
-          ))}
+      <div className="annonces" role="log" aria-label={fr.jeu.annonces}>
+        {annonces.map((a) => (
+          <p key={a.id} className="annonce">
+            {a.text}
+          </p>
+        ))}
+      </div>
+
+      {zoom && (
+        <div className="voile" onClick={() => setZoom(null)}>
+          <div className="zoom-carte" onClick={(e) => e.stopPropagation()}>
+            <TreasureCardImage card={zoom} size="lg" />
+            <button className="btn" onClick={() => setZoom(null)}>
+              {fr.jeu.fermer}
+            </button>
+          </div>
         </div>
-      </section>
+      )}
 
       {reveal && (
         <div className="voile" onClick={onRevealDismiss}>
@@ -191,6 +270,98 @@ export function GameView({
   );
 }
 
+// ---- announcements ---------------------------------------------------------------
+
+/** Surfaces log entries added since the previous projection as transient toasts.
+ * The first projection only records the high-water mark, so a reconnect never replays
+ * the whole journal. */
+function useAnnonces(log: LogEntry[]): LogEntry[] {
+  const [items, setItems] = useState<LogEntry[]>([]);
+  const lastSeen = useRef<number | null>(null);
+  useEffect(() => {
+    const maxId = log.length > 0 ? log[log.length - 1]!.id : 0;
+    if (lastSeen.current === null) {
+      lastSeen.current = maxId;
+      return;
+    }
+    const seen = lastSeen.current;
+    lastSeen.current = Math.max(seen, maxId);
+    const fresh = log.filter((e) => e.id > seen);
+    if (fresh.length === 0) return;
+    setItems((cur) => [...cur, ...fresh].slice(-5));
+    setTimeout(() => {
+      setItems((cur) => cur.filter((e) => !fresh.some((f) => f.id === e.id)));
+    }, 8000);
+  }, [log]);
+  return items;
+}
+
+// ---- boarding banner ---------------------------------------------------------------
+
+function AbordageBandeau({ b, nameOf }: { b: BoardingView; nameOf: (seat: number) => string }) {
+  const activeDefenders = b.defenders.filter((s) => !b.escaped.includes(s));
+  return (
+    <section className="abordage" role="status">
+      {b.card && (
+        <div className="abordage-carte">
+          <EventCardImage card={b.card} size="sm" />
+        </div>
+      )}
+      <div className="abordage-corps">
+        <h3 className="abordage-titre">{b.card ? fr.jeu.abordageEnCours : fr.jeu.contreAbordageEnCours}</h3>
+        <div className="abordage-camps">
+          <span className="camp camp-attaque">⚔ {b.attackers.map(nameOf).join(' + ')}</span>
+          <span className="abordage-contre">{fr.jeu.contre}</span>
+          <span className="camp camp-defense">🛡 {activeDefenders.map(nameOf).join(' + ') || '—'}</span>
+        </div>
+        <div className="abordage-profil">
+          <span className="texte-faible">{fr.jeu.profilCombat}</span>
+          {b.profile.map((v, i) => (
+            <img key={`${v}-${i}`} src={valueIcon(v)} alt={VALUE_LABEL[v]} title={VALUE_LABEL[v]} />
+          ))}
+        </div>
+        {b.escaped.length > 0 && (
+          <p className="abordage-echappes texte-faible">
+            {b.escaped.map(nameOf).join(', ')} — {fr.jeu.echappe}
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ---- zone help -----------------------------------------------------------------------
+
+function AideZone({ sujet }: { sujet: 'evenements' | 'tresors' | 'navires' }) {
+  const [open, setOpen] = useState(false);
+  const aide = fr.aide[sujet];
+  return (
+    <>
+      <button
+        className="btn-aide"
+        onClick={() => setOpen(true)}
+        aria-label={`${fr.aide.bouton} — ${aide.titre}`}
+        title={`${fr.aide.bouton} — ${aide.titre}`}
+      >
+        ?
+      </button>
+      {open && (
+        <div className="voile" onClick={() => setOpen(false)}>
+          <div className="panneau panneau-aide" onClick={(e) => e.stopPropagation()}>
+            <h3>{aide.titre}</h3>
+            {aide.corps.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
+            <button className="btn" onClick={() => setOpen(false)}>
+              {fr.jeu.fermer}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ---- ships -----------------------------------------------------------------------
 
 function shipBadges(proj: PlayerProjection, seat: number): string[] {
@@ -204,6 +375,13 @@ function shipBadges(proj: PlayerProjection, seat: number): string[] {
   return badges;
 }
 
+function combatRole(b: BoardingView | null, seat: number): 'attaque' | 'defense' | null {
+  if (!b) return null;
+  if (b.attackers.includes(seat)) return 'attaque';
+  if (b.defenders.includes(seat) && !b.escaped.includes(seat)) return 'defense';
+  return null;
+}
+
 function ShipPanel({
   title,
   values,
@@ -213,6 +391,7 @@ function ShipPanel({
   connected,
   master,
   badges,
+  combat,
 }: {
   title: string;
   values: Record<Value, number>;
@@ -222,11 +401,12 @@ function ShipPanel({
   connected: boolean;
   master: boolean;
   badges: string[];
+  combat: 'attaque' | 'defense' | null;
 }) {
   const crewCounts = new Map<string, number>();
   for (const label of crew) crewCounts.set(label, (crewCounts.get(label) ?? 0) + 1);
   return (
-    <article className={`navire ${me ? 'moi' : ''}`}>
+    <article className={`navire ${me ? 'moi' : ''} ${combat ? `navire-${combat}` : ''}`}>
       <div className="entete-navire">
         <strong className="navire-nom">
           {master && (
@@ -244,12 +424,19 @@ function ShipPanel({
         </span>
       </div>
       <div className="valeurs">
-        {VALUES.map((v) => (
-          <span key={v} className={`valeur ${values[v] > 0 ? '' : 'valeur-zero'}`} title={VALUE_LABEL[v]}>
-            <img src={valueIcon(v)} alt={VALUE_LABEL[v]} />
-            <b>{values[v]}</b>
-          </span>
-        ))}
+        {VALUES.map((v) => {
+          const bonus = values[v] >= BONUS_THRESHOLD_SOLO;
+          return (
+            <span
+              key={v}
+              className={`valeur ${bonus ? 'valeur-bonus' : values[v] > 0 ? '' : 'valeur-zero'}`}
+              title={bonus ? fr.jeu.bonusActif(VALUE_LABEL[v]) : VALUE_LABEL[v]}
+            >
+              <img src={valueIcon(v)} alt={VALUE_LABEL[v]} />
+              <b>{values[v]}</b>
+            </span>
+          );
+        })}
       </div>
       <div className="navire-cale texte-faible">
         {[...crewCounts.entries()].map(([label, n]) => `${label}${n > 1 ? ` ×${n}` : ''}`).join(', ') ||
@@ -378,15 +565,15 @@ function PendingPrompt({
             {fr.jeu.choisirRecrues(p.count, p.action === 'steal' ? fr.jeu.voler : fr.jeu.defausser)}{' '}
             <span className="texte-faible">({nameOf(p.fromSeat)})</span>
           </strong>
-          <div className="choix">
+          <div className="choix choix-cartes">
             {p.choices.map((c) => (
               <button
                 key={c.id}
-                className={`btn ${selected.includes(c.id) ? 'btn-choisi' : ''}`}
+                className={`carte-btn ${selected.includes(c.id) ? 'carte-btn-choisi' : ''}`}
                 disabled={busy}
                 onClick={() => toggle(c.id)}
               >
-                {RECRUIT_LABEL[c.kind]}
+                <EventCardImage card={c} size="sm" />
               </button>
             ))}
           </div>

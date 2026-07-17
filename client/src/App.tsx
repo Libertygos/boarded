@@ -9,6 +9,7 @@ import { bounceToPlatform, resolveEntry } from './net/entry.js';
 import { roomCodeFromPath, usePath } from './router.js';
 import { LandingScreen } from './screens/LandingScreen.js';
 import { RoomScreen } from './screens/RoomScreen.js';
+import { TopBar } from './components/TopBar.js';
 import { fr } from './i18n/fr.js';
 
 const HTTP_URL = import.meta.env.VITE_SERVER_HTTP ?? window.location.origin;
@@ -56,6 +57,7 @@ export function App() {
   }
   return (
     <>
+      <TopBar session={session} />
       <Toast />
       <LandingScreen session={session} httpUrl={HTTP_URL} wsUrl={WS_URL} />
     </>

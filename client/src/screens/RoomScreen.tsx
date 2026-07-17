@@ -16,6 +16,7 @@ import { joinGameRoom, onceMessage, reconnectGameRoom, roomExists, type RoomWelc
 import { clearResume, loadResume, saveResume } from '../state/resume.js';
 import { RoomLobby } from './RoomLobby.js';
 import { GameView } from './GameView.js';
+import { TopBar } from '../components/TopBar.js';
 import type { Session } from '../auth/handoff.js';
 
 type View = 'connecting' | 'lobby' | 'game' | 'duplicate';
@@ -213,18 +214,27 @@ export function RoomScreen({
 
   if (view === 'duplicate') {
     return (
-      <div className="centre-plein">
-        <div style={{ textAlign: 'center' }}>
-          <h2>{fr.room.duplicateTitle}</h2>
-          <p className="texte-faible">{fr.room.duplicateBody}</p>
+      <>
+        <TopBar session={session} />
+        <div className="centre-plein">
+          <div style={{ textAlign: 'center' }}>
+            <h2>{fr.room.duplicateTitle}</h2>
+            <p className="texte-faible">{fr.room.duplicateBody}</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
   if (view === 'lobby' && roomRef.current) {
-    return <RoomLobby room={roomRef.current} seatId={seatId} onLeave={leaveIntentionally} notice={banner} />;
+    return (
+      <>
+        <TopBar session={session} />
+        <RoomLobby room={roomRef.current} seatId={seatId} onLeave={leaveIntentionally} notice={banner} />
+      </>
+    );
   }
   if (view === 'game' && proj) {
+    // The gameroom owns its full chrome — no platform toolbar in game.
     return (
       <GameView
         proj={proj}
@@ -237,5 +247,10 @@ export function RoomScreen({
       />
     );
   }
-  return <div className="centre-plein">{fr.connecting}</div>;
+  return (
+    <>
+      <TopBar session={session} />
+      <div className="centre-plein">{fr.connecting}</div>
+    </>
+  );
 }

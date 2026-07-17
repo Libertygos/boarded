@@ -82,7 +82,7 @@ export function gainTreasure(state: GameState, seat: number, card: TreasureCard)
     state.status = 'ended';
     state.winner = p.userId;
     state.stack = [];
-    state.log.push({ text: `${p.displayName} détient les 4 coins de carte et remporte la partie !` });
+    log(state, `${p.displayName} détient les 4 coins de carte et remporte la partie !`);
     return true;
   }
   return false;
@@ -97,6 +97,7 @@ export function takeRandomTreasure(state: GameState, fromSeat: number, rng: () =
 }
 
 export function log(state: GameState, text: string): void {
-  state.log.push({ text });
+  state.logSeq += 1;
+  state.log.push({ id: state.logSeq, text });
   if (state.log.length > 100) state.log.splice(0, state.log.length - 100);
 }

@@ -41,6 +41,7 @@ export function createGame(matchId: string, seats: SeatInput[], seed: number): G
     stack: [],
     reveals: [],
     log: [],
+    logSeq: 0,
   };
   advance(state, rng);
   return state;

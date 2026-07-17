@@ -182,8 +182,10 @@ export type Frame =
       stealsPerWinner: number;
     };
 
-/** Public log entry (everything in it is public information). */
+/** Public log entry (everything in it is public information). `id` is monotonic across
+ * the whole match so clients can diff projections and announce only the new entries. */
 export interface LogEntry {
+  id: number;
   text: string;
 }
 
@@ -210,6 +212,8 @@ export interface GameState {
   /** Private unicast reveals for the server to drain (Longue-vue). Never projected. */
   reveals: PrivateReveal[];
   log: LogEntry[];
+  /** Monotonic log-entry counter (survives the log's own size cap). */
+  logSeq: number;
 }
 
 export interface PrivateReveal {

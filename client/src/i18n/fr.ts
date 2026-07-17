@@ -12,6 +12,11 @@ export const fr = {
     codePlaceholder: 'CODE',
     version: (v: string) => `v${v}`,
   },
+  barre: {
+    retourPlateforme: 'Retour à la plateforme GosGames',
+    monCompte: 'Ouvrir mon compte GosGames',
+    deconnexion: 'Se déconnecter',
+  },
   devLogin: {
     title: 'Connexion locale (dev)',
     namePlaceholder: 'Votre nom de pirate',
@@ -70,7 +75,8 @@ export const fr = {
     pioche: (n: number) => `Pioche : ${n}`,
     tresors: 'Vos trésors',
     equipage: 'Équipage',
-    journal: 'Journal de bord',
+    navires: 'Navires',
+    annonces: 'Événements de la partie',
     gagnant: (name: string) => `${name} remporte la partie !`,
     retourAccueil: "Retour à l'accueil",
     quitter: 'Quitter la partie',
@@ -96,5 +102,44 @@ export const fr = {
     fermer: 'Fermer',
     mainVide: '(main vide)',
     cartesEnMain: (n: number) => `${n} carte${n > 1 ? 's' : ''}`,
+    abordageEnCours: 'Abordage en cours !',
+    contreAbordageEnCours: 'Contre-Abordage en cours !',
+    contre: 'contre',
+    profilCombat: 'Profil de combat :',
+    echappe: "échappé·e vers l'Île Brumeuse",
+    bonusActif: (v: string) => `Bonus ${v} actif (≥ 4) — les cartes à icône ${v} sont renforcées.`,
+    agrandir: (titre: string) => `Agrandir ${titre}`,
+  },
+  aide: {
+    bouton: 'Aide',
+    evenements: {
+      titre: 'Les événements',
+      corps: [
+        'À chaque manche, les 4 premières cartes du paquet Événements sont révélées face visible. En commençant par le Maître du Vent puis dans le sens horaire, chaque joueur en choisit une et la résout immédiatement.',
+        'Recrutement : la recrue rejoint votre équipage et augmente vos valeurs (Sabres, Voiles, Canons, Pistolets).',
+        'Pillage : piochez 1 trésor — 2 si votre navire a au moins 4 unités de la valeur bonus de la carte.',
+        "Abordage : attaquez un navire. Chaque camp additionne ses valeurs sur le profil de combat de la carte ; le plus haut total l'emporte et vole 1 trésor au perdant (2 avec le bonus). Égalité : le Maître du Vent tranche.",
+        'À 2–3 joueurs, les événements restants retournent sous le paquet en fin de manche.',
+      ],
+    },
+    tresors: {
+      titre: 'Vos trésors',
+      corps: [
+        "Votre main de trésors est secrète : les autres joueurs ne voient que votre nombre de cartes. Cliquez sur une carte pour l'agrandir.",
+        'Coins de carte : réunissez les 4 coins distincts de la carte au trésor pour gagner immédiatement.',
+        'Malédictions : elles se jouent depuis votre main quand leur déclencheur survient — le jeu vous le proposera au bon moment. Les jouer reste toujours facultatif.',
+        "Talismans : des leurres qui protègent votre main. Ils ne se jouent jamais, mais leur effet se déclenche quand on vous les vole — et c'est souvent le voleur qui le regrette.",
+        'Les vols prennent une carte au hasard dans la main de la victime : ni elle ni le voleur ne choisissent.',
+      ],
+    },
+    navires: {
+      titre: 'Les navires',
+      corps: [
+        "Chaque panneau montre un navire : ses valeurs (issues de son équipage, toujours publiques), son équipage et le nombre de trésors qu'il garde en main.",
+        "Bonus : dès qu'une valeur atteint 4, elle s'illumine — les cartes portant cette icône en bonus ont alors un effet renforcé (à 2 contre 2, il faut 8 en cumulé).",
+        'Le Maître du Vent révèle les événements, choisit en premier et tranche toutes les égalités. Le rôle passe au joueur suivant à chaque manche.',
+        'Le Retardataire (à la droite du Maître) choisit en dernier, mais pioche 1 trésor au début de chaque manche.',
+      ],
+    },
   },
 };

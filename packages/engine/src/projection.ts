@@ -8,7 +8,17 @@
  * WHO is being asked (that would reveal they hold an eligible curse) — non-actors see a
  * generic wait with no seat attribution.
  */
-import type { EventCard, Frame, GameState, LogEntry, RecruitCard, TreasureCard, Value, ValueCounts } from './types.js';
+import type {
+  BoardingCard,
+  EventCard,
+  Frame,
+  GameState,
+  LogEntry,
+  RecruitCard,
+  TreasureCard,
+  Value,
+  ValueCounts,
+} from './types.js';
 import { VALUES } from './types.js';
 import { actingSeat } from './flow.js';
 import { countValue, laggardSeat, playerAt } from './state.js';
@@ -58,6 +68,9 @@ export interface BoardingView {
   defenders: number[];
   profile: Value[];
   escaped: number[];
+  /** The boarding card being resolved (public — it was picked face-up); null for a Contre-Abordage. */
+  card: BoardingCard | null;
+  bonusIcon: Value | null;
 }
 
 export interface PlayerProjection {
@@ -152,7 +165,14 @@ function boardingView(state: GameState): BoardingView | null {
   for (let i = state.stack.length - 1; i >= 0; i--) {
     const f = state.stack[i]!;
     if (f.kind === 'boardingResolve') {
-      return { attackers: f.attackers, defenders: f.defenders, profile: f.profile, escaped: f.escaped };
+      return {
+        attackers: f.attackers,
+        defenders: f.defenders,
+        profile: f.profile,
+        escaped: f.escaped,
+        card: f.card,
+        bonusIcon: f.bonusIcon,
+      };
     }
   }
   return null;
