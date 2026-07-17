@@ -265,7 +265,7 @@ input::placeholder {
 .carte-titre {
   font-family: var(--affiche);
   color: #7e2a1c;
-  padding: 3.5% 12% 3.5%;
+  padding: 3.5% 17% 3.5%;
   line-height: 1.05;
   background: linear-gradient(rgba(242, 234, 216, 0.94) 55%, rgba(242, 234, 216, 0.6) 82%, rgba(242, 234, 216, 0));
   text-shadow: 0 1px 0 rgba(242, 234, 216, 0.85);
@@ -302,20 +302,21 @@ input::placeholder {
   display: none;
 }
 
-/* suit pips — emblem glyphs on a parchment roundel, top-left.
-   z-index keeps them in front of the title band's parchment scrim. */
+/* suit pips — emblem glyphs on a parchment roundel, top-left. Solid fill, ink border
+   and shadow keep them clearly IN FRONT of the title band's parchment scrim. */
 .carte-pips {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 2.6%;
   left: 3.6%;
   display: flex;
   align-items: center;
   gap: 2px;
   padding: 3px 5px;
-  background: rgba(242, 234, 216, 0.92);
-  border: 1px solid var(--filet-parchemin);
+  background: var(--parchemin);
+  border: 1.5px solid var(--texte-encre);
   border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 .pip {
   display: block;
@@ -336,11 +337,11 @@ input::placeholder {
   height: 24px;
 }
 
-/* bonus badge — suit glyph in a hand-drawn ring with a "+", top-right.
-   z-index keeps it in front of the title band's parchment scrim. */
+/* bonus badge — suit glyph in a hand-drawn ring with a "+", top-right. Solid fill and
+   shadow keep it clearly IN FRONT of the title band's parchment scrim. */
 .carte-bonus {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 2.6%;
   right: 3.6%;
   display: flex;
@@ -348,9 +349,10 @@ input::placeholder {
   justify-content: center;
   width: 34px;
   height: 34px;
-  background: rgba(242, 234, 216, 0.92);
+  background: var(--parchemin);
   border: 2px solid var(--texte-encre);
   border-radius: 48% 52% 50% 50% / 53% 47% 53% 47%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 .carte-bonus .pip {
   width: 19px;
