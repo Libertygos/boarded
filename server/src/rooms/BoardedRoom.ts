@@ -462,10 +462,16 @@ export class BoardedRoom extends Room {
       // can run again on the ended state (reconnect re-projections).
       if (!this.matchReported && this.matchStartedAt) {
         this.matchReported = true;
+        // state.winner is already a platform account id; the platform only
+        // accepts a winner who is a participant, so guard with matchPlayerIds.
+        const winner = state.winner;
         void reportMatch({
           playerAccountIds: this.matchPlayerIds,
           startedAt: this.matchStartedAt,
           endedAt: new Date(),
+          ...(winner && this.matchPlayerIds.includes(winner)
+            ? { winnerAccountIds: [winner] }
+            : {}),
         });
       }
     }
