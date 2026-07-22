@@ -15,6 +15,7 @@ import { normalizeRoomCode } from './rooms/room-code.js';
 import { verifyHandoffToken } from './auth/handoff.js';
 import { issueSession } from './auth/session.js';
 import { metricsText } from './http/metrics.js';
+import { mountInternalRoutes } from './http/internalRoutes.js';
 
 const PORT = Number(process.env.PORT ?? 2567);
 const HANDOFF_SECRET = process.env.HANDOFF_JWT_SECRET ?? '';
@@ -33,6 +34,9 @@ app.get('/metrics', (_req, res) => {
   res.set('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
   res.send(metricsText());
 });
+
+// Platform → game internal channel: remote-end (login_all_games.md O3), Bearer-authed.
+mountInternalRoutes(app);
 
 /**
  * Handoff exchange: client POSTs the handoff token (read from the URL fragment client-side,

@@ -19,7 +19,9 @@ import { GameView } from './GameView.js';
 import { TopBar } from '../components/TopBar.js';
 import type { Session } from '../auth/handoff.js';
 
-type View = 'connecting' | 'lobby' | 'game' | 'duplicate';
+type View = 'connecting' | 'lobby' | 'game' | 'duplicate' | 'superseded';
+
+const PLATFORM_HOME = 'https://www.gosgames.com';
 
 interface ReconnectOk extends RoomWelcome {
   state: PlayerProjection;
@@ -93,6 +95,14 @@ export function RoomScreen({
       setProj(null);
       setBanner(m?.message ?? fr.room.aborted);
       setView('lobby');
+    });
+    // Platform remote-end / 409 supersede (login_all_games.md O3/UX D): the account is now
+    // playing elsewhere. Show the standard exit screen — never a silent freeze or raw
+    // socket error. Mark intentional so the ensuing onLeave doesn't flash "connection lost".
+    room.onMessage('SESSION_ENDED', () => {
+      intentionalRef.current = true;
+      clearResume();
+      setView('superseded');
     });
     room.onLeave(() => {
       roomRef.current = null;
@@ -212,6 +222,27 @@ export function RoomScreen({
     goHome();
   };
 
+  if (view === 'superseded') {
+    // UX D: this session was ended because the account started playing elsewhere.
+    return (
+      <>
+        <TopBar session={session} />
+        <div className="centre-plein">
+          <div style={{ textAlign: 'center' }}>
+            <h2>{fr.room.supersededTitle}</h2>
+            <p className="texte-faible">{fr.room.supersededBody}</p>
+            <button
+              className="btn btn-primaire"
+              type="button"
+              onClick={() => window.location.replace(PLATFORM_HOME)}
+            >
+              {fr.room.supersededAction}
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
   if (view === 'duplicate') {
     return (
       <>

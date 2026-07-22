@@ -50,6 +50,11 @@ export const fr = {
     aborted: 'Partie interrompue.',
     duplicateTitle: 'Déjà ouvert ailleurs',
     duplicateBody: 'Cette salle est déjà ouverte dans un autre onglet ou appareil.',
+    // Shown on a 409 supersede or a platform remote-end (login_all_games.md UX D): the
+    // account started playing elsewhere, so this session was ended by the platform.
+    supersededTitle: 'Session terminée',
+    supersededBody: 'Vous avez commencé à jouer sur un autre appareil. Cette session a été fermée.',
+    supersededAction: 'Retour à gosgames',
     errors: {
       BAD_CODE: 'Code de salle invalide.',
       ROOM_FULL: 'La salle est pleine.',
