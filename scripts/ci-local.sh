@@ -53,6 +53,12 @@ case "$ONLY" in ""|check|image) ;; *) echo "--only: check or image" >&2; exit 2 
 
 REPO=$(git rev-parse --show-toplevel)
 SHA=$(git -C "$REPO" rev-parse --verify "$REF^{commit}")
+if [ $RETARGET = 1 ] && [ $DRY = 0 ]; then
+  [ -z "$ONLY" ] || { echo "--retarget (real) needs the full run: no --only" >&2; exit 2; }
+  git -C "$REPO" fetch -q origin main
+  git -C "$REPO" merge-base --is-ancestor "$SHA" origin/main ||
+    { echo "--retarget (real) refused: $SHA is not on origin/main (land it first)" >&2; exit 2; }
+fi
 NODE=docker.io/library/node:22-bookworm
 CACHE=${CI_LOCAL_CACHE:-$HOME/.cache/boarded-ci-local}
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/boarded-ci.XXXXXX")
@@ -136,7 +142,6 @@ if [ $RETARGET = 1 ]; then
   git clone -q --depth 1 https://github.com/Libertygos/homelab.git "$HL"
   sed -i -E "s/^(\s*newTag:\s*).*/\1\"${SHA}\"/" "$HL/$f"
   if git -C "$HL" diff --quiet -- "$f"; then echo "retarget: no-op bump (already $SHA?)" >&2; exit 1; fi
-  [ -z "$LATEST" ] || docker tag "$IMAGE:$SHA" "$IMAGE:latest"
   if [ $DRY = 1 ]; then
     echo "retarget   DRY-RUN: would commit and push to Libertygos/homelab main:"
     git -C "$HL" diff -U0 -- "$f" | grep '^[+-]' | grep -v '^\(+++\|---\)'
