@@ -1,0 +1,64 @@
+# Style LoRA "abordink" on FLUX.2 klein 4B base (homelab #1699), trained with ai-toolkit
+# (ostris, ~/ai-toolkit on the image station), same recipe as War of Guilds' wogpaint (#1162).
+# Dataset: 34 of the 40 masters of client/public/cards/ (880x1232; 4 of the 10 near-identical
+# boarding scenes kept so one scene does not dominate), captioned in captions/ (subject and the
+# value-object colours; the trigger word carries the sumi-e style). Fits the RTX 5070's 12 GB
+# with an 8-bit transformer and text encoder and cached text embeddings.
+job: extension
+config:
+  name: 'abordink_klein4b_v1'
+  process:
+    - type: 'sd_trainer'
+      training_folder: '/home/jules/lora-runs'
+      device: cuda:0
+      trigger_word: 'abordink'
+      network:
+        type: 'lora'
+        linear: 16
+        linear_alpha: 16
+      save:
+        dtype: float16
+        save_every: 250
+        max_step_saves_to_keep: 8
+      datasets:
+        - folder_path: '/home/jules/datasets/boarded/img'
+          caption_ext: 'txt'
+          caption_dropout_rate: 0.05
+          shuffle_tokens: false
+          cache_latents_to_disk: true
+          resolution: [768, 1024]
+      train:
+        batch_size: 1
+        steps: 2000
+        gradient_accumulation_steps: 1
+        train_unet: true
+        train_text_encoder: false
+        gradient_checkpointing: true
+        noise_scheduler: 'flowmatch'
+        optimizer: 'adamw8bit'
+        lr: 1e-4
+        cache_text_embeddings: true
+        dtype: bf16
+      model:
+        name_or_path: 'black-forest-labs/FLUX.2-klein-base-4B'
+        arch: 'flux2_klein_4b'
+        quantize: true
+        quantize_te: true
+        low_vram: true
+      sample:
+        sampler: 'flowmatch'
+        sample_every: 500
+        width: 768
+        height: 1152
+        prompts:
+          - 'abordink, a lone pirate cook standing with a ladle, black silhouette with a headscarf, one copper pot, full figure, centered'
+          - 'abordink, a sea turtle carrying a small island with one palm tree on its shell, waves around it'
+          - 'abordink, a game board panel seen from above, an ornamental border of rope and waves, four empty card-sized frames in a row, a compass rose in one corner'
+        neg: ''
+        seed: 42
+        walk_seed: false
+        guidance_scale: 4
+        sample_steps: 25
+meta:
+  name: 'abordink_klein4b_v1'
+  version: '1.0'
