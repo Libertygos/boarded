@@ -18,7 +18,9 @@ def save(a, p):
 def paper_estimate(img):
     """The generated paper under the ink: a closing that ignores ink, then a wide blur."""
     im = Image.fromarray((img * 255).astype(np.uint8))
-    small = im.resize((im.width // 8, im.height // 8), Image.BILINEAR)
+    # fixed working size: the result must not change with an upscaled source (filter radii are in these pixels)
+    k = max(im.width / 1024, 1) * 8
+    small = im.resize((max(int(im.width / k), 1), max(int(im.height / k), 1)), Image.BILINEAR)
     closed = small.filter(ImageFilter.MaxFilter(15)).filter(ImageFilter.GaussianBlur(14))
     return np.asarray(closed.resize(im.size, Image.BICUBIC), dtype=np.float32) / 255.0
 

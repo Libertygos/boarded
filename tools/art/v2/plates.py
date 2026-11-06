@@ -64,8 +64,10 @@ def fit_in_box(ink, box=ART_BOX, pad=0.02):
     x0, y0, x1, y1 = ink_bbox(ink)
     h, w = ink.shape[:2]
     px, py = int((x1 - x0) * pad) + 8, int((y1 - y0) * pad) + 8
+    # does the drawing itself reach the source's edge? Tested before padding, or a drawing near the edge would be faded
+    e = int(0.004 * w) + 1
+    runs = (x0 <= e, y0 <= e, x1 >= w - e, y1 >= h - e)
     x0, y0, x1, y1 = max(x0 - px, 0), max(y0 - py, 0), min(x1 + px, w), min(y1 + py, h)
-    runs = (x0 <= 2, y0 <= 2, x1 >= w - 2, y1 >= h - 2)
     crop = ink[y0:y1, x0:x1]
     bw, bh = int((box[2] - box[0]) * W), int((box[3] - box[1]) * H)
     s = min(bw / crop.shape[1], bh / crop.shape[0])
@@ -74,9 +76,15 @@ def fit_in_box(ink, box=ART_BOX, pad=0.02):
     # fade margin
     m = max(int(0.02 * max(nw, nh)), 4); M = int(0.09 * nw)
     ml, mt, mr, mb = [M if r else m for r in runs]
-    xx = np.minimum(np.arange(nw) / ml, np.arange(nw)[::-1] / mr)
-    yy = np.minimum(np.arange(nh) / mt, np.arange(nh)[::-1] / mb)
-    f = (np.clip(np.minimum(yy[:, None], xx[None, :]), 0, 1) ** 1.5)[..., None]
+    # a side that runs off the source ends on a wavering brush edge, never a straight cut
+    def wob(n, on, amp, seed=0):
+        if not on: return np.zeros(n, np.float32)
+        w = ni.gaussian_filter1d(np.random.RandomState(n % 97 + seed).rand(n), max(n * .025, 2)); w = (w - w.min()) / (np.ptp(w) + 1e-6)
+        return w * amp
+    X, Y = np.arange(nw, dtype=np.float32), np.arange(nh, dtype=np.float32)
+    xx = np.minimum((X[None, :] - wob(nh, runs[0], ml * 1.3)[:, None]) / ml, (X[::-1][None, :] - wob(nh, runs[2], mr * 1.3, 1)[:, None]) / mr)
+    yy = np.minimum((Y[:, None] - wob(nw, runs[1], mt * 1.3)[None, :]) / mt, (Y[::-1][:, None] - wob(nw, runs[3], mb * 1.3, 1)[None, :]) / mb)
+    f = (np.clip(np.minimum(xx, yy), 0, 1) ** 1.5)[..., None]
     art = 1 - (1 - art) * f
     out = np.ones((H, W, 3), np.float32)
     ox = int(box[0] * W + (bw - nw) / 2); oy = int(box[1] * H + (bh - nh) / 2)
@@ -85,8 +93,13 @@ def fit_in_box(ink, box=ART_BOX, pad=0.02):
 
 
 def clean(ink, white=0.90):
-    """Everything close to bare paper becomes bare paper: the plate can then sit anywhere with no box around it."""
-    return np.clip(ink / white, 0, 1)
+    """Everything close to bare paper becomes bare paper: the plate can then sit anywhere with no box around it.
+    Grain an upscale kept (specks on a near-white area) goes too; real washes stay darker than this once blurred."""
+    out = np.clip(ink / white, 0, 1)
+    k = max(ink.shape[1] / 1024, 1)
+    g = ni.gaussian_filter(out.mean(-1), 2.5 * k)
+    m = np.clip((g - 0.93) / 0.04, 0, 1)[..., None]
+    return out * (1 - m) + m
 
 
 BOX = {1: ART_BOX, 2: (0.05, 0.135, 0.95, 0.71), 3: (0.07, 0.135, 0.93, 0.72)}
@@ -101,11 +114,16 @@ def erase_rects(ink, rects):
     return 1 - (1 - ink) * (1 - m)
 
 
-def make_plate(path, asset, paper, box=ART_BOX, erase=None):
+def make_plate(path, asset, paper, box=ART_BOX, erase=None, ghost=None):
     ink = erase_rects(clean(post.ink_layer(post.load(path))), erase)
     hx = lock_for(asset)
     if hx:
         ink = post.lock_suit(ink, hx)
+    if ghost:
+        # the ship above the waterline as a faint apparition: ink strength scaled, full again below the water
+        y1, a = ghost
+        t = np.clip((y1 - np.arange(ink.shape[0]) / ink.shape[0]) / 0.04, 0, 1)[:, None, None]
+        ink = 1 - (1 - ink) * (1 - t * (1 - a))
     return post.on_parchment(fit_in_box(ink, box=box), paper)
 
 
@@ -126,13 +144,13 @@ def clean_burst(ink, grow=26):
     keep = lab == np.bincount(c).argmax()
     return 1 - (1 - ink) * ni.gaussian_filter(keep.astype(np.float32), 3)[..., None]
 
-def make_boarding(scene_path, burst_paths, paper, burst_scale=None, right_of_index=False, bottom=0.74):
+def make_boarding(scene_path, burst_paths, paper, burst_scale=None, right_of_index=False, bottom=0.74, pos=None):
     """scene_path: black plate; burst_paths: one image per value of the profile, in profile order."""
     ink = clean(post.strip_colour(post.ink_layer(post.load(scene_path))))
     fitted = fit_in_box(ink, box=(0.05, 0.37, 0.95, bottom))
     n = len(burst_paths)
     s = burst_scale or ({2: 0.46, 3: 0.33} if right_of_index else {2: 0.46, 3: 0.37})[n]
-    for (cx, cy), (bp, hx, *er) in zip((BURST_POS_B if right_of_index else BURST_POS)[n], burst_paths):
+    for (cx, cy), (bp, hx, *er) in zip((pos or (BURST_POS_B if right_of_index else BURST_POS))[n], burst_paths):
         bi = post.lock_suit(clean_burst(erase_rects(clean(post.ink_layer(post.load(bp))), er[0] if er else None)), [hx])
         fitted = post.stamp(fitted, bi, cx, cy, s)
     return post.on_parchment(fitted, paper)
@@ -213,10 +231,12 @@ def sym_centre(ink, reach=0.14):
                 best, by, bx = v, yy, xx
     return 0.5 + (bx + 1) / 2 / W_, 0.5 + (by + 1) / 2 / H
 
-def make_back(path, paper, keep="top", emblems=None, emblem_alpha=None, cy=None, cx=None):
+def make_back(path, paper, keep="top", emblems=None, emblem_alpha=None, cy=None, cx=None, colour=False):
     """The frame is mirrored as drawn; the centre motif is moved onto the card's exact centre first.
     cy/cx: its point of symmetry if the automatic search is not wanted (a double-ended ship: the waterline)."""
-    ink = clean(post.strip_colour(post.ink_layer(post.load(path))))
+    ink = clean(post.ink_layer(post.load(path)))
+    if not colour:
+        ink = post.strip_colour(ink)
     if keep == "bottom":
         ink = ink[::-1, ::-1]
     h, w = ink.shape[:2]

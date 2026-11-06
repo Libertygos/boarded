@@ -1,0 +1,96 @@
+<title>À l'abordage : revue des illustrations</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pirata+One&family=IM+Fell+English:ital@0;1&display=swap">
+<style>
+/* Layout: a sticky index of families, then one row per card with its three versions side by side, read like a proof sheet. */
+:root{--bg:#EFE6D2;--paper:#F8F2E3;--fg:#1A1714;--mute:#6b5f4f;--line:#cdbfa4;--pick:#7e2a1c;--on:#F8F2E3;
+ --disp:"Pirata One","UnifrakturCook",serif;--body:"IM Fell English",Georgia,serif;--ui:ui-sans-serif,system-ui,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17140f;--paper:#221d16;--fg:#EFE6D2;--mute:#a79a84;--line:#40372a;--pick:#e0795f;--on:#17140f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17140f;--paper:#221d16;--fg:#EFE6D2;--mute:#a79a84;--line:#40372a;--pick:#e0795f;--on:#17140f;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.4 var(--body);padding-block:0 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1180px;margin:0 auto}
+header.h{padding-block:26px 8px}
+h1{font:400 clamp(30px,6vw,46px)/1.05 var(--disp);margin:0;text-wrap:balance}
+.lead{max-width:62ch;margin:8px 0 0;color:var(--mute);font-size:17px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font:13px var(--ui)}
+nav a{color:var(--fg);text-decoration:none;white-space:nowrap}nav a:hover,nav a:focus-visible{text-decoration:underline}
+nav a b{font-weight:500;color:var(--mute);font-variant-numeric:tabular-nums}
+.tog{margin-left:auto;display:flex;gap:4px}
+.tog button,.pickb{font:13px var(--ui);background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:5px 9px;cursor:pointer}
+.tog button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+h2{font:400 34px/1 var(--disp);margin:34px 0 4px;scroll-margin-top:60px}
+.row{border-top:1px solid var(--line);padding-block:14px;display:grid;grid-template-columns:170px minmax(0,1fr);gap:16px}
+.meta{min-width:0}.meta h3{font:400 23px/1.05 var(--disp);margin:0}.meta small{color:var(--mute);font:12px var(--ui)}
+.meta textarea{width:100%;margin-top:8px;min-height:64px;background:var(--paper);color:var(--fg);border:1px solid var(--line);border-radius:3px;font:14px var(--ui);padding:6px;resize:vertical;box-sizing:border-box}
+.saved{font:11px var(--ui);color:var(--mute);min-height:14px}
+.vs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.v{min-width:0;display:flex;flex-direction:column;gap:5px}
+.v img{display:block;width:100%;height:auto;border-radius:6px;box-shadow:0 1px 5px rgba(0,0,0,.28);cursor:zoom-in;background:#F2EAD8}
+.pickb{width:100%;font-variant-numeric:tabular-nums}
+.pickb[aria-pressed=true]{background:var(--pick);border-color:var(--pick);color:var(--on)}
+.icons .vs{grid-template-columns:repeat(3,minmax(0,150px))}
+.ib{background:#F2EAD8;border-radius:4px;padding:8px;display:flex;align-items:center;gap:8px;justify-content:center}
+.ib .big{width:58px;height:58px}.ib .sm{width:28px;height:28px}.ib .xs{width:14px;height:14px}
+.ib img{box-shadow:none;background:transparent;border-radius:0;mix-blend-mode:multiply;cursor:default}
+dialog{border:0;padding:0;background:transparent;max-width:96vw;max-height:96vh}dialog img{max-width:96vw;max-height:94vh;border-radius:8px;display:block}
+dialog::backdrop{background:rgba(10,8,5,.82)}
+.warn{font:13px var(--ui);color:var(--pick);margin-top:6px}
+@media (max-width:640px){.row{grid-template-columns:minmax(0,1fr)}}
+.deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;padding-block:10px}
+.dk{min-width:0;display:flex;flex-direction:column;gap:5px}.dk img{display:block;width:100%;height:auto;border-radius:6px;box-shadow:0 1px 5px rgba(0,0,0,.28);cursor:zoom-in;background:#F2EAD8}
+.dk textarea{width:100%;min-height:44px;background:var(--paper);color:var(--fg);border:1px solid var(--line);border-radius:3px;font:13px var(--ui);padding:5px;resize:vertical;box-sizing:border-box}
+.dk small{font:12px var(--ui);color:var(--mute)}
+.vs.n2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:66%}.vs.n1{grid-template-columns:minmax(0,1fr);max-width:33%}
+.meta small{display:block;font-size:13px;line-height:1.35;margin-top:3px}
+@media (max-width:640px){.vs.n2,.vs.n1{max-width:100%}}
+</style>
+<div class="wrap">
+<header class="h"><h1>À l'abordage : revue 2</h1>
+<p class="lead">Tes choix de la revue 1 sont appliqués, en haute définition. D'abord ce qui attend un choix : ce que tu avais demandé de refaire. Ensuite le jeu complet ; note seulement ce qui ne va pas.</p>
+<p class="warn" id="st" hidden></p></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+</div>
+<dialog id="dl"><img id="dli" alt=""></dialog>
+<script>
+const DATA=/*DATA*/null;
+const main=document.getElementById('main'),nav=document.getElementById('nav'),dl=document.getElementById('dl'),dli=document.getElementById('dli');
+let mode='card',db=null,state={};const IMG={};const need=async g=>{const r=await fetch(g+'.json');Object.assign(IMG,await r.json())};
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const x in a){if(x==='class')e.className=a[x];else if(x.startsWith('on'))e[x]=a[x];else e.setAttribute(x,a[x])}e.append(...k);return e};
+const pickBtn=(id,v)=>el('button',{class:'pickb','data-id':id,'data-v':v,'aria-pressed':'false',type:'button',onclick:()=>choose(id,v)},'Option '+v);
+function noteBox(id,ph){const t=el('textarea',{id:'n_'+id,'data-note':id,placeholder:ph||'Note','aria-label':'Note'});const s=el('div',{class:'saved',id:'s_'+id});let h;t.oninput=()=>{clearTimeout(h);h=setTimeout(()=>save(id,{note:t.value}),600)};return[t,s]}
+function img(p){const src=IMG[p]||'';return el('img',{src,alt:'',loading:'lazy',onclick:()=>{dli.src=src;dl.showModal()}})}
+dl.onclick=()=>dl.close();
+function row(it){const[t,sv]=noteBox(it.id,'Note (à refaire, détail…)');
+ return el('article',{class:'row'},el('div',{class:'meta'},el('h3',{},it.title),el('small',{},it.sub||''),t,sv),
+  el('div',{class:'vs'+(it.vs.length<3?' n'+it.vs.length:'')},...it.vs.map(v=>el('div',{class:'v'},img(mode==='plate'&&v.plate?v.plate:v.card),pickBtn(it.id,v.v)))))}
+function render(){main.textContent='';nav.textContent='';
+ const n=(id,t,c)=>nav.append(el('a',{href:'#'+id},t+' ',el('b',{},String(c))));
+ n('redo','À choisir',DATA.redo.length);n('oth','Dos, carte, mise en page',DATA.oth.length);
+ const b1=el('section',{},el('h2',{id:'redo'},'À choisir'));DATA.redo.forEach(i=>b1.append(row(i)));main.append(b1);
+ const b2=el('section',{},el('h2',{id:'oth'},'Dos, carte, mise en page'));DATA.oth.forEach(i=>b2.append(row(i)));main.append(b2);
+ for(const g of DATA.deck){n(g.id,g.title,g.items.length);
+  const grid=el('div',{class:'deck'});
+  for(const c of g.items){const[t,sv]=noteBox(c.id,'Note');grid.append(el('div',{class:'dk'},img(mode==='plate'?c.plate:c.card),c.redo?el('small',{},'Option 1 en attendant ton choix'):'',t,sv))}
+  main.append(el('section',{},el('h2',{id:g.id},g.title),grid))}
+ nav.append(el('div',{class:'tog'},
+  el('button',{type:'button','aria-pressed':String(mode==='card'),onclick:()=>{mode='card';render()}},'Cartes'),
+  el('button',{type:'button','aria-pressed':String(mode==='plate'),onclick:async()=>{if(!Object.keys(IMG).some(k=>k.endsWith('_p.jpg')))await need('plates');mode='plate';render()}},'Illustrations')));
+ paint()}
+function paint(){document.querySelectorAll('.pickb').forEach(b=>{const r=state[b.dataset.id];b.setAttribute('aria-pressed',String(!!r&&String(r.pick)===b.dataset.v))});
+ document.querySelectorAll('[data-note]').forEach(t=>{const r=state[t.dataset.note];if(r&&r.note!=null&&document.activeElement!==t)t.value=r.note})}
+function choose(id,v){const cur=state[id]&&state[id].pick;save(id,{pick:cur===v?null:v})}
+const st=document.getElementById('st');
+async function save(id,patch){state[id]=Object.assign({},state[id],patch);paint();
+ const s=document.getElementById('s_'+id);
+ try{localStorage.setItem('picks2',JSON.stringify(state))}catch(e){}
+ if(!db){if(s)s.textContent='Enregistré sur cet appareil seulement';return}
+ try{await db.doc('reviews2/'+id).set(state[id]);if(s)s.textContent='Enregistré'}catch(e){if(s)s.textContent='Échec de l’enregistrement : '+(e.code||e.message)}}
+try{state=JSON.parse(localStorage.getItem('picks2')||'{}')}catch(e){}
+main.textContent='Chargement des cartes…';
+need('cards').then(render).catch(e=>{main.textContent='Les images n’ont pas pu être chargées : '+e.message});
+(async()=>{try{db=await claude.use('db')}catch(e){db=null}
+ if(!db){st.hidden=false;st.textContent='Enregistrement partagé indisponible ici : les choix restent sur cet appareil.';return}
+ db.collection('reviews2').onSnapshot(q=>{const docs=q.docs||q;(docs.forEach?docs:[]).forEach(d=>{state[d.id]=d.data?d.data():d});paint()},e=>{st.hidden=false;st.textContent='Lecture impossible : '+(e.code||e.message)})})();
+</script>

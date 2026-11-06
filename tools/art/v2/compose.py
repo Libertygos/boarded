@@ -113,6 +113,17 @@ html,body{width:880px;height:1232px;overflow:hidden}
  display:flex;flex-direction:column;justify-content:center;padding:44px 34px 12px;font:41px/1.14 Fell;color:#2c2013;text-align:center}
 .C .rib{position:absolute;left:0;right:0;bottom:292px;display:flex;justify-content:center;align-items:center;gap:8px}
 .C .rib>div{display:flex;gap:6px;align-items:center;background:#F2EAD8;padding:0 14px;border-radius:50px}
+/* D, E: round 2 */
+.D .idx,.E .idx{position:absolute;left:30px;top:32px;width:96px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.D .pp,.E .pp{display:flex;flex-direction:column;gap:8px;align-items:center}
+.D .r,.E .r{position:absolute;right:30px;top:34px}
+.D .mm,.E .mm{position:absolute;right:30px;top:126px}
+.D .t{position:absolute;left:140px;right:176px;top:40px;height:96px;font:400 %(ta)spx/1 Pirata;color:#1A1714;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap}
+.D .tx{position:absolute;left:60px;right:60px;bottom:44px;height:254px;display:flex;flex-direction:column;justify-content:center;font:italic 43px/1.18 Fell;color:#2c2013;text-align:center}
+.E .band{position:absolute;left:0;right:0;top:886px;height:92px;background:#1A1714;display:flex;align-items:center;justify-content:center;-webkit-mask:linear-gradient(90deg,transparent,#000 3%%,#000 97%%,transparent)}
+.E .t{font:400 64px/1 Pirata;color:#F2EAD8}
+.E .tx{position:absolute;left:60px;right:60px;top:978px;bottom:36px;display:flex;flex-direction:column;justify-content:center;font:italic 41px/1.16 Fell;color:#2c2013;text-align:center}
+.disc.trig{float:left;margin:2px 14px 0 0}
 .big{font-size:64px!important;font-style:normal;font-weight:700}
 .cob{position:absolute;left:0;right:0;top:0;padding:30px 40px 26px;background:linear-gradient(rgba(242,234,216,.97) 80%%,rgba(242,234,216,0));text-align:center;color:#1A1714}
 .cob .t2{font:400 62px/1 Pirata;color:#7e2a1c}
@@ -124,6 +135,8 @@ SVGF = '<svg width="0" height="0" style="position:absolute"><filter id="rough"><
 
 def html(c, plate, icons, lay, istyle, css):
     bg = f'<img class="bg" src="{uri(plate, "image/jpeg")}">'
+    if lay in ("D", "E"):
+        return html_d(c, bg, icons, lay, css)
     if c["family"] == "coin":
         # the quarter of the compass and the landmark identify the card: all text sits in one band on the outer edge
         cls = "cob n" if lay == "B" else "cob"
@@ -144,6 +157,46 @@ def html(c, plate, icons, lay, istyle, css):
         body = (f'<div class="fr"></div><div class="t">{c["title"]}</div><div class="pan">{effect(c, icons, 50)}</div>'
                 f'<div class="rib"><div>{pips(c, icons, 72, style)}{mode(c, icons, 46)}{bonus(c, icons, 72, style)}</div></div>')
     return f'<!doctype html><meta charset=utf-8><style>{css}</style>{SVGF}<div class="card {lay}">{bg}{body}</div>'
+
+
+# Round 2, from Jules's note on Capitaine: discs (his icon picks), index down the left edge as in B, no family
+# icon on recruits (the values say it), title in black. D = black title on top; E = the title on B's black band.
+PICK = {"act_defausser": 2, "act_regarder": 2, "family_abordage": 2, "family_coin": 2, "trig_defense": 2}  # all the others: 3
+
+def ic(icons, name, size, colour="#1A1714"):
+    """One icon as Jules picked it: drawing 2 as a plain mask, or drawing 1 reversed in a disc."""
+    if PICK.get(name) == 2:
+        return mask_icon(icons["v2"], name, colour, size)
+    return disc_icon(icons["v1"], name, colour, size)
+
+def html_d(c, bg, icons, lay, css):
+    fam = "" if c["family"] == "recrue" else ic(icons, FAMILY_ICON[c["family"]], 72)
+    pp = "".join(ic(icons, "value_" + v, 78, SUIT[v]) for v in c["pips"])
+    bon = ""
+    if c.get("bonus"):
+        bon = (f'<span class="bonus">{ic(icons, "value_" + c["bonus"], 84, SUIT[c["bonus"]])}'
+               f'<b class="seuil" style="color:{SUIT[c["bonus"]]}">{c.get("threshold", "4+")}</b></span>')
+    mm = ""
+    if "mode" in c:
+        n = int(c["mode"])
+        sh = lambda flip: f'<span style="transform:scaleX({-1 if flip else 1});display:inline-flex">{ic(icons, "ship", 50)}</span>'
+        mm = f'<span class="mode">{sh(False) * n}<em>c.</em>{sh(True) * n}</span>'
+    t = c["effect"]
+    if c["family"] == "recrue" and len(t) < 14:
+        t = f'<span class="big">{t}</span>'
+    trig = ic(icons, TRIG[c["trigger"]], 54).replace('class="ic ', 'class="ic trig ').replace('class="disc"', 'class="disc trig"') if c.get("trigger") else ""
+    eb = ""
+    if c.get("bonus_text"):
+        col = SUIT[c["bonus"]]
+        eb = f'<div class="eb">{ic(icons, "value_" + c["bonus"], 44, col)}<b style="color:{col}">{c.get("threshold","4+")}</b> <span>{c["bonus_text"]}</span></div>'
+    body = f'<div class="et">{trig}{t}</div>{eb}'
+    if c["family"] == "coin":
+        return (f'<!doctype html><meta charset=utf-8><style>{css}</style><div class="card D">{bg}'
+                f'<div class="cob"><div class="t2" style="color:#1A1714">{c["title"]}</div><div class="e2">{c["effect"]}</div></div></div>')
+    title = f'<div class="t">{c["title"]}</div>' if lay == "D" else f'<div class="band"><div class="t">{c["title"]}</div></div>'
+    return (f'<!doctype html><meta charset=utf-8><style>{css}</style><div class="card {lay}">{bg}'
+            f'<div class="idx">{fam}<div class="pp">{pp}</div></div><div class="r">{bon}</div><div class="mm">{mm}</div>'
+            f'{title}<div class="tx">{body}</div></div>')
 
 
 def fit_title(c, base):
