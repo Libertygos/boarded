@@ -1,0 +1,458 @@
+{
+"map_v1": {
+"trim": 0.045,
+"seed": 1580
+},
+"map_v3": {
+"trim": 0.045,
+"seed": 1582
+},
+"back_events_v2": {
+"cy": 0.74,
+"seed": 2420
+},
+"burst_canons_v2": {
+"seed": 10580
+},
+"burst_pistolets_v2": {
+"seed": 10937
+},
+"burst_sabres_v2": {
+"seed": 2659,
+"erase": [
+[
+0.42,
+0.8,
+0.58,
+1
+]
+]
+},
+"burst_voiles_v2": {
+"seed": 2677
+},
+"curse_tempete_v2": {
+"seed": 10680
+},
+"master_of_winds_v2": {
+"seed": 2968
+},
+"recruit_canonnier_v2": {
+"seed": 3182
+},
+"recruit_capitaine_v1": {
+"seed": 11085
+},
+"recruit_capitaine_v3": {
+"seed": 3168
+},
+"recruit_maitre_canonnier_v2": {
+"seed": 11838
+},
+"recruit_maitre_canonnier_v3": {
+"seed": 3920
+},
+"recruit_maitre_voilier_v1": {
+"seed": 11642
+},
+"recruit_navigateur_v2": {
+"seed": 11222
+},
+"recruit_navigateur_v3": {
+"seed": 11223
+},
+"talisman_coffre_piege_v3": {
+"seed": 3563
+},
+"master_of_winds_v3": {
+"seed": 2969,
+"erase": [
+[
+0.2,
+0,
+0.95,
+0.17
+],
+[
+0.3,
+0.82,
+0.85,
+1
+]
+]
+},
+"recruit_canonnier_v1": {
+"seed": 3080
+},
+"recruit_canonnier_v3": {
+"seed": 11001
+},
+"recruit_capitaine_v2": {
+"seed": 3066
+},
+"recruit_maitre_canonnier_v1": {
+"seed": 3817
+},
+"recruit_maitre_voilier_v2": {
+"seed": 3623
+},
+"recruit_maitre_voilier_v3": {
+"seed": 3624
+},
+"recruit_matelot_v1": {
+"seed": 10800
+},
+"recruit_matelot_v2": {
+"seed": 2882,
+"erase": [
+[
+0,
+0,
+1,
+0.2
+]
+]
+},
+"recruit_matelot_v3": {
+"seed": 2883
+},
+"recruit_matelots_v1": {
+"seed": 10915
+},
+"recruit_matelots_v2": {
+"seed": 2997
+},
+"recruit_matelots_v3": {
+"seed": 2998
+},
+"recruit_navigateur_v1": {
+"seed": 11120
+},
+"recruit_officier_v1": {
+"seed": 2962
+},
+"recruit_officier_v2": {
+"seed": 2963
+},
+"recruit_officier_v3": {
+"seed": 10883
+},
+"recruit_quartier_maitre_v1": {
+"seed": 3737
+},
+"recruit_quartier_maitre_v2": {
+"seed": 3738
+},
+"recruit_quartier_maitre_v3": {
+"seed": 3739
+},
+"curse_bateau_fantome_v1": {
+"seed": 11289
+},
+"curse_bateau_fantome_v2": {
+"seed": 11290
+},
+"curse_bateau_fantome_v3": {
+"seed": 3372
+},
+"curse_ile_brumeuse_v1": {
+"seed": 3184
+},
+"curse_ile_brumeuse_v2": {
+"seed": 11104
+},
+"curse_ile_brumeuse_v3": {
+"seed": 3186
+},
+"curse_kraken_v1": {
+"seed": 2539
+},
+"curse_kraken_v2": {
+"seed": 2540
+},
+"curse_kraken_v3": {
+"seed": 2541
+},
+"curse_tempete_v1": {
+"seed": 2659
+},
+"curse_tempete_v3": {
+"seed": 2661
+},
+"curse_tourbillon_v1": {
+"seed": 3001
+},
+"curse_tourbillon_v2": {
+"seed": 3002
+},
+"curse_tourbillon_v3": {
+"seed": 3003
+},
+"raid_canons_v1": {
+"seed": 10334
+},
+"raid_canons_v2": {
+"seed": 2416
+},
+"raid_canons_v3": {
+"seed": 2417
+},
+"raid_pistolets_v1": {
+"seed": 10691
+},
+"raid_pistolets_v2": {
+"seed": 2773
+},
+"raid_pistolets_v3": {
+"seed": 10693
+},
+"raid_sabres_v1": {
+"seed": 2413
+},
+"raid_sabres_v2": {
+"seed": 2414
+},
+"raid_sabres_v3": {
+"seed": 2415
+},
+"raid_voiles_v1": {
+"seed": 2431
+},
+"raid_voiles_v2": {
+"seed": 2432
+},
+"raid_voiles_v3": {
+"seed": 10352
+},
+"back_events_v1": {
+"seed": 10338
+},
+"back_events_v3": {
+"seed": 2421
+},
+"back_treasures_v1": {
+"seed": 2748
+},
+"back_treasures_v2": {
+"seed": 2749
+},
+"back_treasures_v3": {
+"seed": 2750
+},
+"master_of_winds_v1": {
+"seed": 2866
+},
+"talisman_bijou_maudit_v1": {
+"seed": 3490
+},
+"talisman_bijou_maudit_v2": {
+"seed": 3491
+},
+"talisman_bijou_maudit_v3": {
+"seed": 3492
+},
+"talisman_coffre_piege_v1": {
+"seed": 3460
+},
+"talisman_coffre_piege_v2": {
+"seed": 11380
+},
+"talisman_contre_canons_v1": {
+"seed": 11521
+},
+"talisman_contre_canons_v2": {
+"seed": 3603
+},
+"talisman_contre_canons_v3": {
+"seed": 3705
+},
+"talisman_contre_pistolets_v1": {
+"seed": 4060
+},
+"talisman_contre_pistolets_v2": {
+"seed": 4061
+},
+"talisman_contre_pistolets_v3": {
+"seed": 4062
+},
+"talisman_contre_sabres_v1": {
+"seed": 3600
+},
+"talisman_contre_sabres_v2": {
+"seed": 3601
+},
+"talisman_contre_sabres_v3": {
+"seed": 11521
+},
+"talisman_contre_voiles_v1": {
+"seed": 3618
+},
+"talisman_contre_voiles_v2": {
+"seed": 3619
+},
+"talisman_contre_voiles_v3": {
+"seed": 3620
+},
+"talisman_longue_vue_v1": {
+"seed": 11214
+},
+"talisman_longue_vue_v2": {
+"seed": 3296
+},
+"talisman_longue_vue_v3": {
+"seed": 11216
+},
+"talisman_singe_dore_v1": {
+"seed": 3269
+},
+"talisman_singe_dore_v2": {
+"seed": 3270
+},
+"talisman_singe_dore_v3": {
+"seed": 3271
+},
+"map_v2": {
+"seed": 1581
+},
+"burst_canons_v1": {
+"seed": 10478
+},
+"burst_pistolets_v1": {
+"seed": 2916
+},
+"burst_sabres_v1": {
+"seed": 2557
+},
+"burst_voiles_v1": {
+"seed": 10494
+},
+"boardscene_a_v1": {
+"seed": 2500
+},
+"boardscene_b_v2": {
+"seed": 2502
+},
+"boardscene_c_v3": {
+"seed": 10423
+},
+"boardscene_d_v1": {
+"seed": 2503
+},
+"boardscene_e_v2": {
+"seed": 2505
+},
+"icon_act_defausser_v1": {
+"seed": 11281
+},
+"icon_act_defausser_v2": {
+"seed": 19201
+},
+"icon_act_regarder_v1": {
+"seed": 11163
+},
+"icon_act_regarder_v2": {
+"seed": 19083
+},
+"icon_act_voler_v1": {
+"seed": 10871
+},
+"icon_act_voler_v2": {
+"seed": 10872
+},
+"icon_family_abordage_v1": {
+"seed": 19389
+},
+"icon_family_abordage_v2": {
+"seed": 3552
+},
+"icon_family_coin_v1": {
+"seed": 11074
+},
+"icon_family_coin_v2": {
+"seed": 18994
+},
+"icon_family_malediction_v1": {
+"seed": 11810
+},
+"icon_family_malediction_v2": {
+"seed": 19730
+},
+"icon_family_pillage_v1": {
+"seed": 11383
+},
+"icon_family_pillage_v2": {
+"seed": 3465
+},
+"icon_family_recrue_v1": {
+"seed": 3376
+},
+"icon_family_recrue_v2": {
+"seed": 19215
+},
+"icon_family_talisman_v1": {
+"seed": 19425
+},
+"icon_family_talisman_v2": {
+"seed": 3588
+},
+"icon_res_tresor_v1": {
+"seed": 18927
+},
+"icon_res_tresor_v2": {
+"seed": 18928
+},
+"icon_role_maitre_v1": {
+"seed": 3164
+},
+"icon_role_maitre_v2": {
+"seed": 3165
+},
+"icon_role_retardataire_v1": {
+"seed": 19632
+},
+"icon_role_retardataire_v2": {
+"seed": 11714
+},
+"icon_ship_v1": {
+"seed": 2429
+},
+"icon_ship_v2": {
+"seed": 2430
+},
+"icon_trig_defense_v1": {
+"seed": 11175
+},
+"icon_trig_revelation_v1": {
+"seed": 19445
+},
+"icon_trig_revelation_v2": {
+"seed": 19446
+},
+"icon_value_canons_v1": {
+"seed": 19109
+},
+"icon_value_canons_v2": {
+"seed": 3272
+},
+"icon_value_pistolets_v1": {
+"seed": 11547
+},
+"icon_value_sabres_v1": {
+"seed": 19107
+},
+"icon_value_sabres_v2": {
+"seed": 3270
+},
+"icon_value_voiles_v1": {
+"seed": 3287
+},
+"icon_value_voiles_v2": {
+"seed": 19126
+},
+"icon_trig_defense_v2": {
+"file": "gen/icon_trig_defense_v1/s19094/flux2-klein-base-4b-19094_00001_.png"
+},
+"icon_value_pistolets_v2": {
+"file": "gen/icon_value_pistolets_v1/s3628/flux2-klein-base-4b-3628_00001_.png"
+}
+}
