@@ -34,6 +34,8 @@ def resize(a, w, h):
     return np.asarray(Image.fromarray((np.clip(a, 0, 1) * 255 + .5).astype(np.uint8)).resize((w, h), Image.LANCZOS), np.float32) / 255
 
 
+TAL_LOCK = {}   # round 3: the four classic talismans in one flat accent (filled by the build)
+
 def lock_for(asset):
     for k, hx in post.SUIT.items():
         if asset.endswith("_" + k):
@@ -46,6 +48,9 @@ def lock_for(asset):
             return [post.SUIT[v]]
     if asset.endswith("capitaine"):
         return list(post.SUIT.values())
+    for k, hx in TAL_LOCK.items():
+        if asset.endswith(k):
+            return [hx]
     return None   # natural colour allowed (classic talismans)
 
 
@@ -279,3 +284,65 @@ def make_token(plate, size=1024):
     d.ellipse((6, 6, size * 2 - 6, size * 2 - 6), outline=ink, width=int(size * .035))
     d.ellipse((size * .1, size * .1, size * 1.9, size * 1.9), outline=ink, width=int(size * .008))
     return im.resize((size, size), Image.LANCZOS)
+
+
+# ---------- boardings, round 3: the ships fill the art, the bursts sit behind them
+def ship_mask(ink, thr=0.28):
+    """Filled silhouette of the ships: hulls, sails and rigging, holes closed."""
+    d = 1 - ink.min(-1)
+    m = ni.binary_closing(d > thr, iterations=6)
+    m = ni.binary_fill_holes(m)
+    m = ni.binary_opening(m, iterations=2)
+    return ni.gaussian_filter(m.astype(np.float32), 2)[..., None]
+
+def make_boarding_behind(scene_path, burst_paths, paper, box=(0.02, 0.16, 0.98, 0.75), pos=None, scale=None):
+    ink = clean(post.strip_colour(post.ink_layer(post.load(scene_path))))
+    # crop to the ships: the water wash runs to the source's edges and would keep them small
+    d = 1 - ink.min(-1); h, w = d.shape
+    col = np.where((d > 0.6).sum(0) > 0.04 * h)[0]
+    x0, x1 = max(col[0] - int(.03 * w), 0), min(col[-1] + int(.03 * w), w)
+    row = np.where((d > 0.6).sum(1) > 0.03 * w)[0]
+    y0, y1 = max(ink_bbox(ink)[1] - int(.01 * h), 0), min(row[-1] + int(.015 * h), h)
+    ink = ink[y0:y1, x0:x1]
+    fitted = fit_in_box(ink, box=box)
+    n = len(burst_paths)
+    s = scale or {2: 0.50, 3: 0.38}[n]
+    blank = np.ones_like(fitted)
+    for (cx, cy), (bp, hx, *er) in zip(pos[n], burst_paths):
+        bi = post.lock_suit(clean_burst(erase_rects(clean(post.ink_layer(post.load(bp))), er[0] if er else None)), [hx])
+        blank = post.stamp(blank, bi, cx, cy, s)
+    m = ship_mask(fitted)
+    out = fitted * (blank * (1 - m) + m)
+    return post.on_parchment(out, paper)
+
+
+def make_back_court(path, paper, region, colour=False, gap=0.0, inset=(0.12, 0.09), frame=True):
+    """Court-card back: the motif (region, fractions of the source) whole in the top half, its bottom on the
+    centre line, the same turned 180 degrees below. Point-symmetric without cutting the motif."""
+    ink = clean(post.ink_layer(post.load(path)))
+    if not colour:
+        ink = post.strip_colour(ink)
+    h, w = ink.shape[:2]
+    x0, y0, x1, y1 = int(region[0] * w), int(region[1] * h), int(region[2] * w), int(region[3] * h)
+    motif = ink[y0:y1, x0:x1]
+    canvas = np.ones_like(ink)
+    bw, bh = int((1 - 2 * inset[0]) * w), int((0.5 - inset[1] - gap) * h)
+    s = min(bw / motif.shape[1], bh / motif.shape[0])
+    nw, nh = int(motif.shape[1] * s), int(motif.shape[0] * s)
+    m = resize(motif, nw, nh)
+    # soft edge so the crop never shows
+    yy, xx = np.mgrid[0:nh, 0:nw]
+    e = np.minimum(np.minimum(xx, nw - 1 - xx) / (0.04 * nw), yy / (0.04 * nh))   # no fade on the centre line
+    f = np.clip(e, 0, 1)[..., None]
+    m = 1 - (1 - m) * f
+    px, py = (w - nw) // 2, int(h * (0.5 - gap)) - nh
+    canvas[py:py + nh, px:px + nw] = m
+    inner = canvas * canvas[::-1, ::-1]
+    if frame:
+        fr = post.rot180_sym(ink, feather=0.012)
+        mk = np.zeros((h, w), np.float32); iy, ix = int(0.06 * h), int(0.08 * w); mk[iy:h - iy, ix:w - ix] = 1
+        mk = ni.gaussian_filter(mk, 6)[..., None]
+        out = fr * (1 - mk) + inner * mk
+    else:
+        out = inner
+    return post.on_parchment(resize(out, W, H), paper)

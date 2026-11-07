@@ -88,7 +88,7 @@ html,body{width:880px;height:1232px;overflow:hidden}
 .mode em{font:italic 34px Fell;margin:0 8px;color:#1A1714}
 .et{display:flow-root}.et .trig{float:left;margin:2px 14px 0 0}
 .eb{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;font-weight:700}
-.eb b{font-family:Pirata;font-weight:400;font-size:42px}
+.eb b{font-family:Pirata;font-weight:400;font-size:50px}
 /* A */
 .A .top{position:absolute;left:44px;right:44px;top:40px;height:110px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;column-gap:10px}
 .A .l{display:flex;gap:4px;flex-wrap:wrap}
@@ -119,16 +119,16 @@ html,body{width:880px;height:1232px;overflow:hidden}
 .D .r,.E .r{position:absolute;right:30px;top:34px}
 .D .mm,.E .mm{position:absolute;right:30px;top:126px}
 .D .t{position:absolute;left:140px;right:176px;top:40px;height:96px;font:400 %(ta)spx/1 Pirata;color:#1A1714;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap}
-.D .tx{position:absolute;left:60px;right:60px;bottom:44px;height:254px;display:flex;flex-direction:column;justify-content:center;font:italic 43px/1.18 Fell;color:#2c2013;text-align:center}
+.D .tx{position:absolute;left:46px;right:46px;bottom:34px;height:290px;display:flex;flex-direction:column;justify-content:center;font:italic 50px/1.14 Fell;color:#2c2013;text-align:center}
 .E .band{position:absolute;left:0;right:0;top:886px;height:92px;background:#1A1714;display:flex;align-items:center;justify-content:center;-webkit-mask:linear-gradient(90deg,transparent,#000 3%%,#000 97%%,transparent)}
 .E .t{font:400 64px/1 Pirata;color:#F2EAD8}
 .E .tx{position:absolute;left:60px;right:60px;top:978px;bottom:36px;display:flex;flex-direction:column;justify-content:center;font:italic 41px/1.16 Fell;color:#2c2013;text-align:center}
 .disc.trig{float:left;margin:2px 14px 0 0}
-.big{font-size:64px!important;font-style:normal;font-weight:700}
+.big{font-size:76px!important;font-style:normal;font-weight:700}
 .cob{position:absolute;left:0;right:0;top:0;padding:30px 40px 26px;background:linear-gradient(rgba(242,234,216,.97) 80%%,rgba(242,234,216,0));text-align:center;color:#1A1714}
 .cob .t2{font:400 62px/1 Pirata;color:#7e2a1c}
 .cob.n{background:#1A1714;padding:24px 40px 22px}.cob.n .t2{color:#F2EAD8}.cob.n .e2{color:#F2EAD8}
-.cob .e2{font:italic 33px/1.1 Fell;margin-top:6px;color:#2c2013}
+.cob .e2{font:italic 40px/1.1 Fell;margin-top:6px;color:#2c2013}
 """
 SVGF = '<svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence baseFrequency=".04" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3.5"/></filter></svg>'
 

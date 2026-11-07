@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run the art v2 prompts on the image station, resumable. gen.py <prompts.json> <outdir> <seeds_per_version> [family...]"""
 import json, subprocess, sys, os, glob, time
-HL = os.path.expanduser('~/git-projects/homelab-day-1106')
+HL = os.path.expanduser('~/git-projects/homelab')
 pj, out, n = sys.argv[1], os.path.abspath(sys.argv[2]), int(sys.argv[3])
 fams = set(sys.argv[4:])
 A = json.load(open(pj))
