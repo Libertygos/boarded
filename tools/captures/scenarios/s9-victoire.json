@@ -1,0 +1,24 @@
+{
+  "about": "Item 08 (§9): Anne détient Haut-Gauche, Haut-Droit et Bas-Gauche; elle pille et pioche le Coin Bas-Droit: victoire immédiate, les quatre quarts se rassemblent en carte au trésor.",
+  "seed": 1309,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": ["raid-sabres-0", "recruit-matelot-2", "recruit-navigateur-2", "recruit-officier-2"],
+  "treasuresTop": ["corner-HG-1", "corner-BD-0"],
+  "players": {
+    "Anne": {"crew": ["recruit-matelot-0"], "treasures": ["corner-HG-0", "corner-HD-0", "corner-BG-0"]},
+    "Bruno": {"crew": ["recruit-canonnier-0"]},
+    "Chloé": {"crew": ["recruit-navigateur-0"]},
+    "David": {"crew": ["recruit-officier-0"]}
+  },
+  "steps": [
+    {"start": true},
+    {"wait": 2500},
+    {"record": "start", "as": "Anne", "desktop": true},
+    {"pick": "raid-sabres-0", "as": "Anne"},
+    {"wait": 4500},
+    {"record": "stop", "as": "Anne", "name": "08-s9-victoire", "desktop": true},
+    {"shot": "08-s9-victoire", "as": "Anne"},
+    {"shot": "08-s9-victoire-autre-joueur", "as": "Bruno"}
+  ]
+}

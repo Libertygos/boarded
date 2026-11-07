@@ -1,0 +1,115 @@
+{
+ "about": "Items 09 (§10.1 choix passé) et 10 (§10.2 pioches épuisées). Manche 1, Anne Maître: la pioche Événements ne contient que les 4 cartes révélées (deux Capitaines, Matelot, Navigateur), sa défausse les 13 Abordages et 8 Pillages; la pioche Trésors ne contient que la carte du Retardataire, sa défausse deux malédictions jouées (Kraken, Bateau Fantôme). Les autres cartes sont hors jeu (artifice du scénario). David a un Capitaine. Anne prend le Matelot, Bruno le Navigateur, Chloé un Capitaine: il ne reste qu'un Capitaine, David passe son choix. Manche 2: le Capitaine restant est remis sous la pioche, la pioche Événements est mélangée avec sa défausse, la pioche Trésors aussi (Retardataire Anne).",
+ "seed": 1310,
+ "seats": [
+  "Anne",
+  "Bruno",
+  "Chloé",
+  "David"
+ ],
+ "master": "Anne",
+ "eventsTop": [
+  "recruit-capitaine-1",
+  "recruit-capitaine-2",
+  "recruit-matelot-1",
+  "recruit-navigateur-1"
+ ],
+ "eventDiscard": [
+  "boarding-0",
+  "boarding-1",
+  "boarding-2",
+  "boarding-3",
+  "boarding-4",
+  "boarding-5",
+  "boarding-6",
+  "boarding-7",
+  "boarding-8",
+  "boarding-9",
+  "boarding-10",
+  "boarding-11",
+  "boarding-12",
+  "raid-sabres-0",
+  "raid-sabres-1",
+  "raid-voiles-0",
+  "raid-voiles-1",
+  "raid-canons-0",
+  "raid-canons-1",
+  "raid-pistolets-0",
+  "raid-pistolets-1"
+ ],
+ "eventDeckOnly": true,
+ "treasuresTop": [
+  "corner-HG-1"
+ ],
+ "treasureDiscard": [
+  "curse-kraken-1",
+  "curse-bateau-fantome-1"
+ ],
+ "treasureDeckOnly": true,
+ "players": {
+  "Anne": {
+   "crew": [
+    "recruit-matelot-0"
+   ]
+  },
+  "Bruno": {
+   "crew": [
+    "recruit-canonnier-0"
+   ]
+  },
+  "Chloé": {
+   "crew": [
+    "recruit-officier-0"
+   ]
+  },
+  "David": {
+   "crew": [
+    "recruit-capitaine-0"
+   ]
+  }
+ },
+ "steps": [
+  {
+   "start": true
+  },
+  {
+   "wait": 1500
+  },
+  {
+   "pick": "recruit-matelot-1",
+   "as": "Anne"
+  },
+  {
+   "pick": "recruit-navigateur-1",
+   "as": "Bruno"
+  },
+  {
+   "wait": 800
+  },
+  {
+   "shot": "10-s10-pioches-avant",
+   "as": "Chloé"
+  },
+  {
+   "shot": "09-s10-capitaines-restants",
+   "as": "David",
+   "scroll": ".table-evenements"
+  },
+  {
+   "pick": "recruit-capitaine-1",
+   "as": "Chloé"
+  },
+  {
+   "wait": 1500
+  },
+  {
+   "shot": "09-s10-choix-passe",
+   "as": "David",
+   "toasts": true
+  },
+  {
+   "shot": "10-s10-pioches-apres",
+   "as": "David"
+  }
+ ]
+}

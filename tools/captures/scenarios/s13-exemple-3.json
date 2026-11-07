@@ -1,0 +1,43 @@
+{
+  "about": "Item 12 (§13 Exemple 3) et 06 (Kraken bonus, Île Brumeuse 2c2 → 2c1): Anne Maître. Anne, Bruno et Chloé prennent d'abord un Pillage (aucune valeur ne change), puis David prend l'Abordage 2c2 Canons+Pistolets+Voiles (bonus Sabres), partenaire Bruno; Anne et Chloé défendent. Kraken d'Anne avec bonus (4 Canons): 2 recrues volées à David (Maître Canonnier, Quartier-maître). Chloé joue l'Île Brumeuse (2 Voiles, pas de bonus): 2 contre 1. Combat 0 + 4 = 4 contre 8: Anne gagne seule, sans bonus (2 Sabres).",
+  "seed": 1303,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": ["raid-sabres-0", "raid-sabres-1", "raid-canons-0", "boarding-10"],
+  "treasuresTop": ["corner-HD-0", "corner-BG-0", "corner-BD-0", "corner-HG-1"],
+  "players": {
+    "Anne": {"crew": ["recruit-maitre-canonnier-1", "recruit-canonnier-1", "recruit-canonnier-2", "recruit-matelots-0"], "treasures": ["curse-kraken-0"]},
+    "Bruno": {"crew": ["recruit-canonnier-0", "recruit-navigateur-0", "recruit-navigateur-1", "recruit-officier-0"], "treasures": ["talisman-contre-abordage-pistolets"]},
+    "Chloé": {"crew": ["recruit-navigateur-2", "recruit-navigateur-3", "recruit-matelot-1"], "treasures": ["curse-ile-brumeuse-0"]},
+    "David": {"crew": ["recruit-maitre-canonnier-0", "recruit-quartier-maitre-0", "recruit-matelot-0"], "treasures": ["corner-HG-0"]}
+  },
+  "steps": [
+    {"start": true},
+    {"wait": 1500},
+    {"pick": "raid-sabres-0", "as": "Anne"},
+    {"pick": "raid-sabres-1", "as": "Bruno"},
+    {"pick": "raid-canons-0", "as": "Chloé"},
+    {"wait": 1500},
+    {"shot": "12-s13-ex3-1-equipages", "as": "David"},
+    {"pick": "boarding-10", "as": "David"},
+    {"wait": 700},
+    {"shot": "12-s13-ex3-2-partenaire", "as": "David", "scroll": ".prompt"},
+    {"choose": "Bruno", "as": "David"},
+    {"curse": "curse-kraken-0", "play": true, "as": "Anne"},
+    {"wait": 800},
+    {"shot": "12-s13-ex3-3-kraken-choix", "as": "Anne", "scroll": ".prompt"},
+    {"shot": "06-s8-kraken-choix", "as": "Anne", "scroll": ".prompt"},
+    {"recruits": ["recruit-maitre-canonnier-0", "recruit-quartier-maitre-0"], "as": "Anne"},
+    {"wait": 1000},
+    {"shot": "12-s13-ex3-4-kraken-vol", "as": "Anne", "toasts": true},
+    {"shot": "06-s8-kraken-vol", "as": "Anne", "toasts": true},
+    {"shot": "06-s8-kraken-vol-initiateur", "as": "David", "toasts": true},
+    {"curse": "curse-ile-brumeuse-0", "play": true, "as": "Chloé"},
+    {"wait": 1000},
+    {"shot": "12-s13-ex3-5-ile-brumeuse", "as": "Chloé", "scroll": ".abordage", "toasts": true},
+    {"shot": "06-s8-ile-brumeuse-2c2", "as": "Chloé", "scroll": ".abordage", "toasts": true},
+    {"shot": "12-s13-ex3-6-butin-repartition", "as": "Anne", "scroll": ".prompt"},
+    {"nth": 0, "as": "Anne"},
+    {"shot": "12-s13-ex3-7-combat", "as": "Anne", "delay": 5200}
+  ]
+}

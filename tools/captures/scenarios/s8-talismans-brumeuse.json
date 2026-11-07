@@ -1,0 +1,46 @@
+{
+  "about": "Items 07 (Coffre Piégé, Bijou Maudit) et 06 (Île Brumeuse 1c1 avec bonus). Manche 1, Anne Maître: Anne aborde Bruno (Canons+Pistolets) 4 contre 2 et vole son seul trésor, un Coffre Piégé: Anne défausse une de ses recrues (le Canonnier). Bruno aborde Chloé (Canons+Sabres) 2 contre 1 et vole son seul trésor, un Bijou Maudit: Chloé pioche 1 trésor. Chloé pille (Île Brumeuse). Manche 2, Bruno Maître: Bruno aborde Chloé (Pistolets+Sabres); Chloé joue l'Île Brumeuse avec 4 Voiles: elle s'échappe, l'abordage est annulé, et elle vole le Maître Canonnier de Bruno.",
+  "seed": 1307,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": [
+    "boarding-0", "boarding-1", "raid-sabres-0", "recruit-navigateur-2",
+    "boarding-3", "recruit-matelot-2", "recruit-officier-2", "recruit-canonnier-2"
+  ],
+  "treasuresTop": ["corner-HD-0", "corner-BG-0", "curse-ile-brumeuse-0", "corner-BD-0"],
+  "players": {
+    "Anne": {"crew": ["recruit-maitre-canonnier-0", "recruit-officier-0", "recruit-canonnier-0"], "treasures": ["corner-HG-0"]},
+    "Bruno": {"crew": ["recruit-maitre-canonnier-1", "recruit-navigateur-0"], "treasures": ["talisman-coffre-piege-0"]},
+    "Chloé": {"crew": ["recruit-matelot-0", "recruit-maitre-voilier-0", "recruit-maitre-voilier-1"], "treasures": ["talisman-bijou-maudit-0"]},
+    "David": {"crew": ["recruit-navigateur-1"]}
+  },
+  "steps": [
+    {"start": true},
+    {"wait": 1500},
+    {"pick": "boarding-0", "as": "Anne"},
+    {"choose": "Bruno", "as": "Anne"},
+    {"combat": "close", "as": "Anne"},
+    {"wait": 500},
+    {"shot": "07-s8-coffre-piege-choix", "as": "Anne", "scroll": ".prompt"},
+    {"recruits": ["recruit-canonnier-0"], "as": "Anne"},
+    {"wait": 900},
+    {"shot": "07-s8-coffre-piege-defausse", "as": "Anne", "toasts": true},
+    {"pick": "boarding-1", "as": "Bruno"},
+    {"choose": "Chloé", "as": "Bruno"},
+    {"combat": "close", "as": "Chloé"},
+    {"wait": 400},
+    {"shot": "07-s8-bijou-maudit", "as": "Chloé", "scroll": ".main-tresors", "toasts": true},
+    {"pick": "raid-sabres-0", "as": "Chloé"},
+    {"pick": "recruit-navigateur-2", "as": "David"},
+    {"wait": 1500},
+    {"pick": "boarding-3", "as": "Bruno"},
+    {"choose": "Chloé", "as": "Bruno"},
+    {"curse": "curse-ile-brumeuse-0", "play": true, "as": "Chloé"},
+    {"wait": 800},
+    {"shot": "06-s8-ile-brumeuse-bonus-choix", "as": "Chloé", "scroll": ".prompt"},
+    {"recruits": ["recruit-maitre-canonnier-1"], "as": "Chloé"},
+    {"wait": 1000},
+    {"shot": "06-s8-ile-brumeuse-annule", "as": "Chloé", "toasts": true},
+    {"shot": "06-s8-ile-brumeuse-annule-initiateur", "as": "Bruno", "toasts": true}
+  ]
+}

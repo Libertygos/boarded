@@ -1,0 +1,38 @@
+{
+  "about": "Item 06 (Tourbillon, Tempête en Bouteille). Manche 1, Anne Maître: Bruno joue Tourbillon sans bonus (0 Pistolet): Anne, Chloé puis David (à partir du Maître) défaussent chacun une recrue de leur choix. David pille et pioche une Tempête en Bouteille. Manche 2, Bruno Maître: David joue la Tempête (1 Sabre, pas de bonus) et devient Maître du Vent.",
+  "seed": 1308,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": [
+    "recruit-matelot-2", "recruit-navigateur-2", "recruit-officier-2", "raid-voiles-0",
+    "recruit-canonnier-2", "recruit-matelots-0", "recruit-navigateur-3", "recruit-officier-3"
+  ],
+  "treasuresTop": ["corner-HD-0", "curse-tempete-0", "corner-BG-0"],
+  "players": {
+    "Anne": {"crew": ["recruit-matelot-0", "recruit-canonnier-0"]},
+    "Bruno": {"crew": ["recruit-canonnier-1"], "treasures": ["curse-tourbillon-0"]},
+    "Chloé": {"crew": ["recruit-navigateur-0", "recruit-officier-0"]},
+    "David": {"crew": ["recruit-maitre-voilier-0", "recruit-matelot-1"]}
+  },
+  "steps": [
+    {"start": true},
+    {"wait": 1500},
+    {"curse": "curse-tourbillon-0", "play": true, "as": "Bruno"},
+    {"wait": 800},
+    {"shot": "06-s8-tourbillon-choix", "as": "Anne", "scroll": ".prompt"},
+    {"recruits": ["recruit-canonnier-0"], "as": "Anne"},
+    {"recruits": ["recruit-officier-0"], "as": "Chloé"},
+    {"recruits": ["recruit-matelot-1"], "as": "David"},
+    {"wait": 1000},
+    {"shot": "06-s8-tourbillon-resultat", "as": "Bruno", "toasts": true},
+    {"pick": "recruit-matelot-2", "as": "Anne"},
+    {"pick": "recruit-navigateur-2", "as": "Bruno"},
+    {"pick": "recruit-officier-2", "as": "Chloé"},
+    {"pick": "raid-voiles-0", "as": "David"},
+    {"wait": 1500},
+    {"curse": "curse-tempete-0", "play": true, "as": "David"},
+    {"wait": 1000},
+    {"shot": "06-s8-tempete", "as": "David", "toasts": true},
+    {"shot": "06-s8-tempete-ancien-maitre", "as": "Bruno"}
+  ]
+}

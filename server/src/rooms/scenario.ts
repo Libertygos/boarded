@@ -13,7 +13,13 @@
  *                                           //   the seat to the Master's right)
  *     "eventsTop": ["boarding-0", "recruit-matelot-0", ...],   // drawn first → last
  *     "treasuresTop": ["corner-HG-0", ...],                    // drawn first → last
- *     "players": { "Bruno": { "crew": ["recruit-canonnier-0"], "treasures": ["corner-BD-0"] } }
+ *     "players": { "Bruno": { "crew": ["recruit-canonnier-0"], "treasures": ["corner-BD-0"] } },
+ *     "round": 5,                           // the first round played is this one (the
+ *                                           //   Master named above is that round's Master)
+ *     "eventDiscard": ["raid-sabres-0"],    // moved from the deck to the discard
+ *     "treasureDiscard": ["curse-kraken-0"],
+ *     "eventDeckOnly": true,                // the deck is exactly eventsTop: every other
+ *     "treasureDeckOnly": true              //   card not dealt or discarded is out of play
  *   }
  * Card ids are the engine's own (data.ts buildEventDeck / buildTreasureDeck), e.g.
  * recruit-<kind>-<n>, boarding-<0..12>, raid-<value>-<n>, corner-<HG|HD|BG|BD>-<n>,
@@ -31,6 +37,11 @@ export interface Scenario {
   eventsTop?: string[];
   treasuresTop?: string[];
   players?: Record<string, { crew?: string[]; treasures?: string[] }>;
+  round?: number;
+  eventDiscard?: string[];
+  treasureDiscard?: string[];
+  eventDeckOnly?: boolean;
+  treasureDeckOnly?: boolean;
 }
 
 export function loadScenario(): Scenario | null {
@@ -64,15 +75,24 @@ export function prepareScenario(sc: Scenario): (state: GameState) => void {
       return i;
     };
     if (sc.master) state.masterSeat = seatOf(sc.master);
+    if (sc.round && sc.round > 1) {
+      // startRound() increments the round and, past round 0, passes the Master left.
+      state.round = sc.round - 1;
+      state.masterSeat = (state.masterSeat + state.seatOrder.length - 1) % state.seatOrder.length;
+    }
     for (const [name, hand] of Object.entries(sc.players ?? {})) {
       const p = state.players[state.seatOrder[seatOf(name)]!]!;
       for (const id of hand.crew ?? []) p.crew.push(take(state.eventDeck, id) as RecruitCard);
       for (const id of hand.treasures ?? []) p.treasures.push(take(state.treasureDeck, id));
     }
-    // pop() draws from the end: the first listed card goes last.
+    for (const id of sc.eventDiscard ?? []) state.eventDiscard.push(take(state.eventDeck, id));
+    for (const id of sc.treasureDiscard ?? []) state.treasureDiscard.push(take(state.treasureDeck, id));
     const events: EventCard[] = (sc.eventsTop ?? []).map((id) => take(state.eventDeck, id));
-    state.eventDeck.push(...events.reverse());
     const treasures: TreasureCard[] = (sc.treasuresTop ?? []).map((id) => take(state.treasureDeck, id));
+    if (sc.eventDeckOnly) state.eventDeck = [];
+    if (sc.treasureDeckOnly) state.treasureDeck = [];
+    // pop() draws from the end: the first listed card goes last.
+    state.eventDeck.push(...events.reverse());
     state.treasureDeck.push(...treasures.reverse());
   };
 }

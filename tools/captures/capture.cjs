@@ -21,16 +21,24 @@
  * Steps (`as` = the pirate whose page acts or is captured):
  *   {"start": true}                         host clicks « Lancer la partie »
  *   {"shot": "03-s6-revelation", "as": "Anne", "only": "phone"|"desktop",
- *    "scroll": "<css selector to bring into view>", "delay": 800}
+ *    "scroll": "<css selector to bring into view>", "delay": 800, "toasts": true}
+ *        The log toasts (.annonces, bottom right) are hidden for the still (capture-only
+ *        CSS) unless "toasts": true, for stills whose subject is the announcement.
  *   {"pick": "<card id>", "as": "Anne"}     click a revealed event (waits for the turn)
  *   {"hover": "<card id>", "as": "Anne"}
  *   {"choose": "Bruno", "as": "Anne"}       click the prompt button holding this text
  *   {"nth": 0, "as": "Anne"}                click the n-th prompt choice button
  *   {"combat": "skip"|"close", "as": "Anne"} skip the combat animation / close the box
  *   {"waitFor": "<css selector>", "as": "Anne"}
+ *   {"curse": "<card id>", "play": true|false, "as": "Anne"}  open the curse in the
+ *        window prompt, then Jouer (play) or Ignorer
+ *   {"recruits": ["<card id>", ...], "as": "Anne"}  tick recruits in the prompt, Valider
+ *   {"button": "Fermer", "as": "Anne"}     click a button by its accessible name
  *   {"wait": 1000}
  *   {"record": "start", "as": "Anne"} … {"record": "stop", "as": "Anne", "name": "03-s6-distribution-phone"}
  *        CDP screencast of that page (phone) → <name>.webm + <name>.gif (≤390 px, 12 fps).
+ *        With "desktop": true on both steps, a CAPTURE_VIEW=desktop run records too:
+ *        the name's -phone suffix becomes -desktop, GIF 960 px wide.
  * Before any click on a page, an open combat box there is closed (other seats' boxes
  * would otherwise intercept the click).
  * The scenario keys seed/seats/master/eventsTop/treasuresTop/players feed the server
@@ -116,8 +124,17 @@ async function closeCombat(page) {
   }
 }
 
+const HIDE_TOASTS = '.annonces { visibility: hidden !important; }';
 async function shot(page, name, step) {
   if (step.delay) await page.waitForTimeout(step.delay);
+  const hide = step.toasts ? null : await page.addStyleTag({ content: HIDE_TOASTS });
+  try {
+    await shotInner(page, name, step);
+  } finally {
+    if (hide) await hide.evaluate((el) => el.remove());
+  }
+}
+async function shotInner(page, name, step) {
   if (VIEW) {
     if (step.scroll) await page.locator(step.scroll).first().scrollIntoViewIfNeeded();
     else await page.evaluate(() => window.scrollTo(0, 0));
@@ -143,7 +160,7 @@ async function shot(page, name, step) {
 }
 
 const recordings = new Map();
-async function recordStart(ctx, page, who) {
+async function recordStart(ctx, page, who, desktop) {
   const dir = fs.mkdtempSync(path.join(TMP, 'capture-rec-'));
   const cdp = await ctx.newCDPSession(page);
   const frames = [];
@@ -155,8 +172,13 @@ async function recordStart(ctx, page, who) {
       await cdp.send('Page.screencastFrameAck', { sessionId: f.sessionId });
     } catch {}
   });
-  await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 90, maxWidth: 780, maxHeight: 1688 });
-  recordings.set(who, { cdp, frames, dir, t0: Date.now() / 1000 });
+  await cdp.send(
+    'Page.startScreencast',
+    desktop
+      ? { format: 'jpeg', quality: 90, maxWidth: 1440, maxHeight: 900 }
+      : { format: 'jpeg', quality: 90, maxWidth: 780, maxHeight: 1688 },
+  );
+  recordings.set(who, { cdp, frames, dir, t0: Date.now() / 1000, desktop });
 }
 async function recordStop(who, name) {
   const r = recordings.get(who);
@@ -176,10 +198,11 @@ async function recordStop(who, name) {
   const webm = path.join(OUT, `${name}.webm`);
   const gif = path.join(OUT, `${name}.gif`);
   const ff = (args) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args]);
-  ff(['-f', 'concat', '-safe', '0', '-i', list, '-vf', 'fps=25,scale=780:-2', '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '32', webm]);
+  const [vw, gw] = r.desktop ? [1440, 960] : [780, 390];
+  ff(['-f', 'concat', '-safe', '0', '-i', list, '-vf', `fps=25,scale=${vw}:-2`, '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '32', webm]);
   ff([
     '-i', webm,
-    '-vf', 'fps=12,scale=390:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4',
+    '-vf', `fps=12,scale=${gw}:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4`,
     gif,
   ]);
   fs.rmSync(r.dir, { recursive: true, force: true });
@@ -267,12 +290,35 @@ async function recordStop(who, name) {
         else await closeCombat(page);
       } else if (step.waitFor) {
         await page.locator(step.waitFor).first().waitFor();
-      } else if (step.record && VIEW === 'desktop') {
-        // recordings: phone view only
+      } else if (step.curse) {
+        await closeCombat(page);
+        const card = page.locator(`.prompt .choix-cartes button[data-card-id="${step.curse}"]`);
+        await card.and(page.locator(':enabled')).waitFor();
+        await card.click();
+        const btn = page.locator('.zoom-carte').getByRole('button', { name: step.play ? 'Jouer' : 'Ignorer' });
+        await btn.and(page.locator(':enabled')).waitFor();
+        await btn.click();
+      } else if (step.recruits) {
+        await closeCombat(page);
+        for (const id of step.recruits) {
+          const card = page.locator(`.prompt .choix-cartes button[data-card-id="${id}"]`);
+          await card.and(page.locator(':enabled')).waitFor();
+          await card.click();
+        }
+        const ok = page.locator('.prompt').getByRole('button', { name: 'Valider' });
+        await ok.and(page.locator(':enabled')).waitFor();
+        await ok.click();
+      } else if (step.button) {
+        const btn = page.getByRole('button', { name: step.button, exact: true }).first();
+        await btn.and(page.locator(':enabled')).waitFor();
+        await btn.click();
+      } else if (step.record && VIEW === 'desktop' && !step.desktop) {
+        // recordings: phone view only, unless the step asks for desktop too
       } else if (step.record === 'start') {
-        await recordStart(ctxs[step.as], page, step.as);
+        await recordStart(ctxs[step.as], page, step.as, VIEW === 'desktop');
       } else if (step.record === 'stop') {
-        await recordStop(step.as, step.name);
+        const base = step.name.replace(/-(phone|desktop)$/, '');
+        await recordStop(step.as, `${base}-${VIEW === 'desktop' ? 'desktop' : 'phone'}`);
       }
     }
   } catch (e) {
