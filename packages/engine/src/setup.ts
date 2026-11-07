@@ -14,7 +14,17 @@ export interface SeatInput {
   displayName: string;
 }
 
-export function createGame(matchId: string, seats: SeatInput[], seed: number): GameState {
+/**
+ * `prepare` (optional) runs on the shuffled state before the first round starts: the
+ * dev-only scenario harness (server/src/rooms/scenario.ts) uses it to stack the decks,
+ * seat the Maître du Vent and deal starting crews and hands. Production never passes it.
+ */
+export function createGame(
+  matchId: string,
+  seats: SeatInput[],
+  seed: number,
+  prepare?: (state: GameState) => void,
+): GameState {
   if (seats.length < MIN_PLAYERS || seats.length > MAX_PLAYERS) {
     throw new Error(`player count must be in [${MIN_PLAYERS}, ${MAX_PLAYERS}]`);
   }
@@ -45,6 +55,7 @@ export function createGame(matchId: string, seats: SeatInput[], seed: number): G
     log: [],
     logSeq: 0,
   };
+  prepare?.(state);
   advance(state, rng);
   return state;
 }

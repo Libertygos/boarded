@@ -178,6 +178,7 @@ export function GameView({
             <button
               key={card.id}
               className="carte-btn carte-revelee"
+              data-card-id={card.id}
               style={{ animationDelay: `${dealDelays.current.get(card.id) ?? 0}s` }}
               disabled={proj.pending.kind !== 'pickEvent' || busy}
               onClick={() => act({ type: 'PICK_EVENT', cardId: card.id })}
@@ -201,6 +202,7 @@ export function GameView({
             <button
               key={t.id}
               className={`carte-btn ${freshTreasures.has(t.id) ? 'carte-nouvelle' : ''}`}
+              data-card-id={t.id}
               onClick={() => setZoom(t)}
               aria-label={fr.jeu.agrandir(treasureTitle(t))}
             >
@@ -679,6 +681,7 @@ function PendingPrompt({
                   <button
                     key={id}
                     className="carte-btn"
+                    data-card-id={id}
                     disabled={busy}
                     aria-label={card ? fr.jeu.agrandir(treasureTitle(card)) : undefined}
                     onClick={() => card && setCurseZoom(card)}
@@ -739,6 +742,7 @@ function PendingPrompt({
               <button
                 key={c.id}
                 className={`carte-btn ${selected.includes(c.id) ? 'carte-btn-choisi' : ''}`}
+                data-card-id={c.id}
                 disabled={busy}
                 onClick={() => toggle(c.id)}
               >

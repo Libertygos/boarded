@@ -27,6 +27,7 @@ import {
   type SeatInput,
 } from '@boarded/engine';
 import { generateRoomCode, normalizeRoomCode } from './room-code.js';
+import { loadScenario, orderSeats, prepareScenario } from './scenario.js';
 import { isCodeTaken, registerRoom, unregisterRoom, type RoomPhase } from './room-registry.js';
 import { registerSessionHandle, unregisterSessionHandle } from './session-directory.js';
 import { verifySession } from '../auth/session.js';
@@ -484,9 +485,15 @@ export class BoardedRoom extends Room {
     if (!this.canStart()) {
       throw new Error(`Il faut ${MIN_PLAYERS}–${MAX_PLAYERS} joueurs, tous prêts et connectés.`);
     }
-    const seatInputs: SeatInput[] = this.slots.map((s) => ({ userId: s.userId!, displayName: s.displayName }));
-    const seed = Math.floor(Math.random() * 0xffffffff);
-    this.state_ = createGame(this.roomId, seatInputs, seed);
+    let seatInputs: SeatInput[] = this.slots.map((s) => ({ userId: s.userId!, displayName: s.displayName }));
+    let seed = Math.floor(Math.random() * 0xffffffff);
+    // Dev-only scenario harness (BOARDED_SCENARIO, see scenario.ts); null in production.
+    const scenario = loadScenario();
+    if (scenario) {
+      seatInputs = orderSeats(scenario, seatInputs);
+      seed = scenario.seed ?? seed;
+    }
+    this.state_ = createGame(this.roomId, seatInputs, seed, scenario ? prepareScenario(scenario) : undefined);
     // Separate stream for move-time randomness (steals, reshuffles) — still injected.
     this.rng = makeRng((seed ^ 0x9e3779b9) >>> 0);
     this.started = true;
