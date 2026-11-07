@@ -1,0 +1,34 @@
+{
+  "about": "Item 04 (§7/§8.5) Contre-Abordage: Anne (Maître) aborde Chloé (Canons+Pistolets) 2 contre 1 et lui vole son seul trésor, le Contre-Abordage Canons. Chloé désigne Bruno: Canons seuls, 1 contre 0, Chloé vole 1 trésor à Bruno, sans bonus.",
+  "seed": 8505,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": [
+    "boarding-0", "recruit-matelot-1", "recruit-navigateur-1", "recruit-officier-2",
+    "recruit-matelot-2", "recruit-canonnier-2", "recruit-navigateur-2", "recruit-officier-3"
+  ],
+  "treasuresTop": ["corner-HG-1", "corner-HD-1"],
+  "players": {
+    "Anne": {"crew": ["recruit-maitre-canonnier-0"]},
+    "Bruno": {"crew": ["recruit-maitre-voilier-0"], "treasures": ["corner-HD-0"]},
+    "Chloé": {"crew": ["recruit-canonnier-0"], "treasures": ["talisman-contre-abordage-canons"]},
+    "David": {"crew": ["recruit-navigateur-0"]}
+  },
+  "steps": [
+    {"start": true},
+    {"wait": 1500},
+    {"pick": "boarding-0", "as": "Anne"},
+    {"choose": "Chloé", "as": "Anne"},
+    {"wait": 4500},
+    {"shot": "04-s8-contre-butin-initial", "as": "Chloé"},
+    {"combat": "close", "as": "Chloé"},
+    {"wait": 400},
+    {"shot": "04-s8-contre-cible", "as": "Chloé", "scroll": ".prompt"},
+    {"record": "start", "as": "Chloé"},
+    {"choose": "Bruno", "as": "Chloé"},
+    {"shot": "04-s8-contre-combat-totaux", "as": "Chloé", "delay": 2150},
+    {"wait": 1700},
+    {"record": "stop", "as": "Chloé", "name": "04-s8-contre-abordage-phone"},
+    {"shot": "04-s8-contre-butin", "as": "Chloé"}
+  ]
+}

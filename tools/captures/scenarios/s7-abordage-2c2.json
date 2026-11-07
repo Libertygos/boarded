@@ -1,0 +1,41 @@
+{
+  "about": "Item 04 (§7) 2 contre 2 + égalité: Anne (Maître) prend Abordage 2c2 Canons+Voiles (bonus Pistolets), partenaire Chloé, contre Bruno+David: 2+1+2 = 5 contre 1+1 = 2; chaque gagnant vole un perdant différent, Anne (gagnante la plus proche du Maître) répartit. Puis Bruno prend Abordage 1c1 Canons+Sabres contre David: 1 contre 1, égalité, Anne (Maître) tranche.",
+  "seed": 7202,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": [
+    "boarding-9", "boarding-1", "recruit-matelot-1", "recruit-navigateur-1",
+    "recruit-officier-2", "recruit-matelot-2", "recruit-canonnier-2", "recruit-navigateur-2"
+  ],
+  "treasuresTop": ["corner-HG-1", "corner-HD-1"],
+  "players": {
+    "Anne": {"crew": ["recruit-maitre-canonnier-0", "recruit-navigateur-0"], "treasures": ["corner-BD-1"]},
+    "Bruno": {"crew": ["recruit-canonnier-0"], "treasures": ["corner-HD-0"]},
+    "Chloé": {"crew": ["recruit-maitre-voilier-0"]},
+    "David": {"crew": ["recruit-navigateur-3", "recruit-matelot-0"], "treasures": ["corner-HG-0", "corner-BG-0"]}
+  },
+  "steps": [
+    {"start": true},
+    {"wait": 1500},
+    {"pick": "boarding-9", "as": "Anne"},
+    {"wait": 700},
+    {"shot": "04-s7-2c2-partenaire", "as": "Anne", "scroll": ".prompt"},
+    {"choose": "Chloé", "as": "Anne"},
+    {"wait": 700},
+    {"shot": "04-s7-2c2-repartition", "as": "Anne", "scroll": ".prompt"},
+    {"record": "start", "as": "Anne"},
+    {"nth": 0, "as": "Anne"},
+    {"shot": "04-s7-2c2-combat-totaux", "as": "Anne", "delay": 3050},
+    {"wait": 1600},
+    {"record": "stop", "as": "Anne", "name": "04-s7-2c2-abordage-phone"},
+    {"shot": "04-s7-2c2-butin", "as": "Anne"},
+    {"combat": "close", "as": "Anne"},
+    {"pick": "boarding-1", "as": "Bruno"},
+    {"choose": "David", "as": "Bruno"},
+    {"wait": 900},
+    {"shot": "04-s7-egalite-maitre", "as": "Anne", "scroll": ".prompt"},
+    {"shot": "04-s7-egalite-attente", "as": "Bruno", "scroll": ".prompt"},
+    {"choose": "Attaquants", "as": "Anne"},
+    {"shot": "04-s7-egalite-verdict", "as": "Anne", "delay": 4200}
+  ]
+}

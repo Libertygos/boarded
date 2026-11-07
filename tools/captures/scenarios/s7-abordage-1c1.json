@@ -1,0 +1,31 @@
+{
+  "about": "Item 04 (§7) 1 contre 1, bonus: Anne (Maître) prend Abordage 1c1 Canons+Pistolets (bonus Voiles), vise Chloé. Anne 2 Canons + 1 Pistolet = 3 contre Chloé 1 + 1 = 2; Anne a 4 Voiles: bonus, elle vole 2 trésors.",
+  "seed": 7101,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": [
+    "boarding-0", "recruit-canonnier-1", "recruit-matelot-1", "recruit-navigateur-1",
+    "recruit-officier-2", "recruit-matelot-2", "recruit-canonnier-2", "recruit-navigateur-2"
+  ],
+  "treasuresTop": ["corner-HG-1", "corner-HD-1"],
+  "players": {
+    "Anne": {"crew": ["recruit-maitre-canonnier-0", "recruit-officier-0", "recruit-maitre-voilier-0", "recruit-maitre-voilier-1"]},
+    "Bruno": {"crew": ["recruit-matelot-0"], "treasures": ["corner-HD-0"]},
+    "Chloé": {"crew": ["recruit-canonnier-0", "recruit-officier-1"], "treasures": ["corner-HG-0", "corner-BG-0", "corner-BD-0"]},
+    "David": {"crew": ["recruit-navigateur-0"]}
+  },
+  "steps": [
+    {"start": true},
+    {"wait": 1500},
+    {"pick": "boarding-0", "as": "Anne"},
+    {"wait": 700},
+    {"shot": "04-s7-1c1-cible", "as": "Anne", "scroll": ".prompt"},
+    {"record": "start", "as": "Anne"},
+    {"choose": "Chloé", "as": "Anne"},
+    {"shot": "04-s7-1c1-combat-totaux", "as": "Anne", "delay": 3050},
+    {"wait": 1600},
+    {"record": "stop", "as": "Anne", "name": "04-s7-1c1-abordage-phone"},
+    {"shot": "04-s7-1c1-butin", "as": "Anne"},
+    {"shot": "04-s7-1c1-butin-perdant", "as": "Chloé"}
+  ]
+}

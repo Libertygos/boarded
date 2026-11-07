@@ -1,0 +1,36 @@
+{
+  "about": "Items 11 (§12 lobby), 02 (§5 mise en place), 03 (§6 manche). Anne Maître du Vent, David Retardataire; round 1: Anne recrue, Bruno pillage, Chloé et David recrues; round 2: Bruno Maître, Anne Retardataire pioche.",
+  "seed": 1764,
+  "seats": ["Anne", "Bruno", "Chloé", "David"],
+  "master": "Anne",
+  "eventsTop": [
+    "recruit-canonnier-0", "raid-sabres-0", "recruit-matelots-0", "recruit-navigateur-0",
+    "recruit-officier-0", "recruit-maitre-voilier-0", "recruit-matelot-0", "recruit-canonnier-1"
+  ],
+  "treasuresTop": ["corner-HG-0", "corner-BD-0", "corner-HD-0"],
+  "steps": [
+    {"shot": "11-s12-salon-hote", "as": "Anne"},
+    {"record": "start", "as": "Anne"},
+    {"start": true},
+    {"wait": 2500},
+    {"record": "stop", "as": "Anne", "name": "03-s6-revelation-distribution-phone"},
+    {"shot": "02-s5-mise-en-place", "as": "Anne"},
+    {"shot": "03-s6-pioche-retardataire", "as": "David"},
+    {"shot": "03-s6-revelation", "as": "Anne", "scroll": ".table-evenements"},
+    {"hover": "recruit-canonnier-0", "as": "Anne"},
+    {"shot": "03-s6-recrue-selection", "as": "Anne", "scroll": ".table-evenements"},
+    {"pick": "recruit-canonnier-0", "as": "Anne"},
+    {"wait": 600},
+    {"shot": "03-s6-recrue-navire", "as": "Anne"},
+    {"shot": "03-s6-choix", "as": "Bruno", "scroll": ".table-evenements"},
+    {"record": "start", "as": "Bruno"},
+    {"pick": "raid-sabres-0", "as": "Bruno"},
+    {"wait": 2500},
+    {"record": "stop", "as": "Bruno", "name": "03-s6-pillage-pioche-phone"},
+    {"shot": "03-s6-pillage", "as": "Bruno", "scroll": ".main-tresors"},
+    {"pick": "recruit-matelots-0", "as": "Chloé"},
+    {"pick": "recruit-navigateur-0", "as": "David"},
+    {"wait": 900},
+    {"shot": "03-s6-fin-de-manche", "as": "Anne"}
+  ]
+}
