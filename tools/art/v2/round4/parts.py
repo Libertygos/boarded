@@ -1,0 +1,11 @@
+def PARTS(paper, B):
+    rope = B.frame_rope('rope', 1535)
+    helm = B.crest('helm', 9438); hooks = B.crest('hooks', 9564)
+    coin = B.crest('doubloon', 17801, colour=True); wreath = B.crest('wreath', 9667, colour=True)
+    waves = B.seigaiha(); dark = B.dark_field()
+    B.save(B.back(waves, rope, [(helm, .50)], medallion=.30), paper, 'back_events_1', discs=True)
+    B.save(B.back(dark, None, [(helm, .50)], medallion=.30, light_border=True), paper, 'back_events_2', discs=True)
+    B.save(B.back(waves, rope, [(hooks, .54)], medallion=.30), paper, 'back_events_3', discs=True)
+    B.save(B.back(dark, None, [(wreath, .70), (coin, .36)], medallion=.38, light_border=True), paper, 'back_treasures_1')
+    B.save(B.back(waves, rope, [(wreath, .70), (coin, .36)], medallion=.38), paper, 'back_treasures_2')
+    B.save(B.back(dark, None, [(coin, .54)], medallion=.32, light_border=True), paper, 'back_treasures_3')
