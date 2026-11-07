@@ -734,11 +734,15 @@ input::placeholder {
   gap: 8px;
 }
 .role-jeton img {
-  width: 24px;
-  height: 34px;
-  object-fit: cover;
-  border-radius: 3px;
-  border: 1px solid var(--filet);
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+.role-jeton img.role-retardataire {
+  width: 22px;
+  height: 22px;
+  margin: 0 4px;
 }
 .jeu-pioches {
   display: flex;
@@ -781,11 +785,10 @@ input::placeholder {
   letter-spacing: 0.02em;
 }
 .navire-maitre {
-  width: 18px;
-  height: 26px;
-  object-fit: cover;
-  border-radius: 2px;
-  border: 1px solid var(--texte-encre);
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 50%;
 }
 .navire-badges {
   display: inline-flex;
@@ -908,8 +911,8 @@ input::placeholder {
 }
 .fin-quart img {
   position: absolute;
-  width: 200%;
-  height: 200%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   user-select: none;
 }

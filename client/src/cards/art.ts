@@ -6,8 +6,12 @@
  * Suit → filename word translation: sailors=pistolets, officers=sabres, sails=voiles.
  * Masters live in /cards/<name>.png (880×1232, immutable); in-game variants in
  * /cards/w440/<name>.webp.
+ *
+ * v2.0.0 art (homelab #1757, wired by tools/art/wire_v2.py): every face carries its own
+ * title, effect text and value icons. CardImage hides its HTML overlay when
+ * ART_HAS_TEXT is true (no double text); the titles/effects below stay as alt text.
  */
-import type { EventCard, TreasureCard, Value } from '@boarded/engine';
+import type { Corner, EventCard, TreasureCard, Value } from '@boarded/engine';
 import { CORNER_LABEL, CURSE_LABEL, RECRUIT_LABEL, TALISMAN_LABEL, VALUE_LABEL } from '@boarded/engine';
 
 export interface CardArt {
@@ -22,10 +26,24 @@ function art(name: string): CardArt {
   return { name, png: `/cards/${name}.png`, webp: `/cards/w440/${name}.webp` };
 }
 
+/** The faces carry title, text and icons (v2.0.0): no HTML overlay on top of them. */
+export const ART_HAS_TEXT = true;
+
 export const BACK_EVENTS = art('back_events');
 export const BACK_TREASURES = art('back_treasures');
+/** The Maître du Vent token (square, 880×880 / 440×440). */
 export const MASTER_OF_WINDS = art('master_of_winds');
+/** The Maître du Vent role card face. */
+export const ROLE_MASTER_OF_WINDS = art('role_master_of_winds');
 export const MAP_TREASURE = art('map_treasure');
+
+/** The four quarters of the treasure map (victory overlay). */
+export function mapQuarter(corner: Corner): CardArt {
+  return art(`map_${corner.toLowerCase()}`);
+}
+
+/** Retardataire marker (cream hourglass on an ink disc). */
+export const LAGGARD_ICON = '/cards/icons/role_retardataire.png';
 
 /** Cropped suit emblems from back_events.png (Jules's ruling: these are the value logos). */
 export function valueIcon(v: Value): string {
@@ -68,9 +86,9 @@ const SUIT_WORD_SINGULAR: Record<Value, string> = {
 /** Fixed suit order in boarding filenames: canons, officers, sails, sailors. */
 const SUIT_FILE_ORDER: Value[] = ['canons', 'sabres', 'voiles', 'pistolets'];
 
-function boardingName(profile: Value[]): string {
+function boardingName(profile: Value[], mode: '1v1' | '2v2'): string {
   const words = SUIT_FILE_ORDER.filter((v) => profile.includes(v)).map((v) => SUIT_WORD[v]);
-  return `boarding_${words.join('_')}`;
+  return `boarding_${mode === '2v2' ? 'team_' : ''}${words.join('_')}`;
 }
 
 // ---- curses / talismans --------------------------------------------------------------
@@ -100,11 +118,11 @@ export function eventArt(card: EventCard): CardArt {
     return art((count >= 2 ? RECRUIT_TWO : RECRUIT_ONE)[value]);
   }
   if (card.type === 'raid') return art(`raid_${SUIT_WORD[card.bonusIcon]}`);
-  return art(boardingName(card.profile));
+  return art(boardingName(card.profile, card.mode));
 }
 
 export function treasureArt(card: TreasureCard): CardArt {
-  if (card.type === 'corner') return MAP_TREASURE;
+  if (card.type === 'corner') return art(`corner_${card.corner.toLowerCase()}`);
   if (card.type === 'curse') return art(CURSE_ART[card.curse]!);
   if (card.talisman === 'contre-abordage' && card.value) {
     return art(`talisman_${SUIT_WORD_SINGULAR[card.value]}_counter_boarding`);
@@ -112,7 +130,7 @@ export function treasureArt(card: TreasureCard): CardArt {
   return art(TALISMAN_ART[card.talisman] ?? TALISMAN_ART['bijou-maudit']!);
 }
 
-// ---- titles & effect text (overlay layer — game info never lives in the PNG) ----------
+// ---- titles & effect text (alt text; the overlay layer when ART_HAS_TEXT is false) ----
 
 export function eventTitle(card: EventCard): string {
   if (card.type === 'recruit') return RECRUIT_LABEL[card.kind];

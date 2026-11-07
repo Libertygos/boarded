@@ -7,12 +7,18 @@
  * Corner cards: each card shows its QUADRANT of the treasure map (CSS crop of the full
  * master — Jules's ruling 2026-07-17, supersedes the earlier full-map + ring treatment).
  * The winning screen reunites the four quadrants into the complete map.
+ *
+ * v2.0.0 art (ART_HAS_TEXT): the faces print their own title, text, value icons, bonus
+ * and 1c1/2c2 mode, and the Coins are their own map quarter, so the overlay (pips,
+ * bonus badge, mode chip, text bands, CSS quadrant crop) is not drawn; the title and
+ * effect stay in the alt text.
  */
 import type { CardArt } from './art.js';
 import {
+  ART_HAS_TEXT,
   BACK_EVENTS,
   BACK_TREASURES,
-  MASTER_OF_WINDS,
+  ROLE_MASTER_OF_WINDS,
   eventArt,
   eventEffect,
   eventTitle,
@@ -27,6 +33,7 @@ import { VALUE_LABEL } from '@boarded/engine';
 export type CardSize = 'xs' | 'sm' | 'md' | 'lg';
 
 function Art({ art, alt, size }: { art: CardArt; alt: string; size: CardSize }) {
+  // With baked-in text the alt carries title + effect for screen readers.
   // xs/sm/md render at ≤300px wide → the 440px webp is enough; lg (zoom) gets the master.
   const src = size === 'lg' ? art.png : art.webp;
   return <img className="carte-art" src={src} alt={alt} loading="lazy" draggable={false} />;
@@ -80,6 +87,11 @@ export function EventCardImage({ card, size = 'md' }: { card: EventCard; size?: 
         ? card.profile
         : [];
   return (
+    ART_HAS_TEXT ? (
+      <Frame size={size}>
+        <Art art={art} alt={`${title}. ${eventEffect(card)}`} size={size} />
+      </Frame>
+    ) : (
     <Frame size={size}>
       <Art art={art} alt={title} size={size} />
       <PipBand values={pips} />
@@ -90,12 +102,20 @@ export function EventCardImage({ card, size = 'md' }: { card: EventCard; size?: 
         <span className="carte-effet">{eventEffect(card)}</span>
       </figcaption>
     </Frame>
+    )
   );
 }
 
 export function TreasureCardImage({ card, size = 'md' }: { card: TreasureCard; size?: CardSize }) {
   const art = treasureArt(card);
   const title = treasureTitle(card);
+  if (ART_HAS_TEXT) {
+    return (
+      <Frame size={size}>
+        <Art art={art} alt={`${title}. ${treasureEffect(card)}`} size={size} />
+      </Frame>
+    );
+  }
   return (
     <Frame size={size} className={card.type === 'corner' ? `carte-coin coin-${card.corner}` : ''}>
       <Art art={art} alt={title} size={size} />
@@ -111,7 +131,7 @@ export function TreasureCardImage({ card, size = 'md' }: { card: TreasureCard; s
   );
 }
 
-/** Face-down piles and the Master of Winds role marker. */
+/** Face-down piles and the Master of Winds role card. */
 export function CardBack({
   kind,
   size = 'sm',
@@ -123,7 +143,7 @@ export function CardBack({
   count?: number;
   label?: string;
 }) {
-  const art = kind === 'events' ? BACK_EVENTS : kind === 'treasures' ? BACK_TREASURES : MASTER_OF_WINDS;
+  const art = kind === 'events' ? BACK_EVENTS : kind === 'treasures' ? BACK_TREASURES : ROLE_MASTER_OF_WINDS;
   return (
     <div className="pile">
       <Frame size={size} className="carte-dos">

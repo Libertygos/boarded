@@ -30,7 +30,7 @@ import {
 } from '@boarded/engine';
 import { fr } from '../i18n/fr.js';
 import { CardBack, EventCardImage, TreasureCardImage } from '../cards/CardImage.js';
-import { MAP_TREASURE, treasureTitle, valueIcon } from '../cards/art.js';
+import { LAGGARD_ICON, MASTER_OF_WINDS, mapQuarter, treasureTitle, valueIcon } from '../cards/art.js';
 
 export function GameView({
   proj,
@@ -106,10 +106,11 @@ export function GameView({
         </div>
         <div className="jeu-roles">
           <span className="role-jeton" title={fr.jeu.maitre}>
-            <img src="/cards/w440/master_of_winds.webp" alt="" aria-hidden />
+            <img src={MASTER_OF_WINDS.webp} alt="" aria-hidden />
             {fr.jeu.maitre} : <b>{nameOf(proj.masterSeat)}</b>
           </span>
-          <span className="texte-faible">
+          <span className="role-jeton texte-faible" title={fr.jeu.retardataire}>
+            <img className="role-retardataire" src={LAGGARD_ICON} alt="" aria-hidden />
             {fr.jeu.retardataire} : {nameOf(proj.laggardSeat)}
           </span>
         </div>
@@ -144,6 +145,7 @@ export function GameView({
           me
           connected
           master={proj.self.seatId === proj.masterSeat}
+          laggard={proj.self.seatId === proj.laggardSeat}
           badges={shipBadges(proj, proj.self.seatId)}
           combat={combatRole(proj.boarding, proj.self.seatId)}
         />
@@ -156,6 +158,7 @@ export function GameView({
             treasureInfo={fr.jeu.cartesEnMain(o.treasureCount)}
             connected={o.connected}
             master={o.seatId === proj.masterSeat}
+            laggard={o.seatId === proj.laggardSeat}
             badges={shipBadges(proj, o.seatId)}
             combat={combatRole(proj.boarding, o.seatId)}
           />
@@ -279,7 +282,7 @@ export function GameView({
             <div className="fin-carte" aria-hidden>
               {CORNERS.map((c) => (
                 <span key={c} className={`fin-quart fin-quart-${c}`}>
-                  <img src={MAP_TREASURE.webp} alt="" draggable={false} />
+                  <img src={mapQuarter(c).webp} alt="" draggable={false} />
                 </span>
               ))}
             </div>
@@ -522,6 +525,7 @@ function ShipPanel({
   me,
   connected,
   master,
+  laggard,
   badges,
   combat,
 }: {
@@ -532,6 +536,7 @@ function ShipPanel({
   me?: boolean;
   connected: boolean;
   master: boolean;
+  laggard?: boolean;
   badges: string[];
   combat: 'attaque' | 'defense' | null;
 }) {
@@ -542,7 +547,10 @@ function ShipPanel({
       <div className="entete-navire">
         <strong className="navire-nom">
           {master && (
-            <img className="navire-maitre" src="/cards/w440/master_of_winds.webp" alt={fr.jeu.maitre} title={fr.jeu.maitre} />
+            <img className="navire-maitre" src={MASTER_OF_WINDS.webp} alt={fr.jeu.maitre} title={fr.jeu.maitre} />
+          )}
+          {laggard && (
+            <img className="navire-maitre" src={LAGGARD_ICON} alt={fr.jeu.retardataire} title={fr.jeu.retardataire} />
           )}
           {title}
         </strong>

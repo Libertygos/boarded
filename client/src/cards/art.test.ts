@@ -14,7 +14,10 @@ import {
   BACK_TREASURES,
   MAP_TREASURE,
   MASTER_OF_WINDS,
+  LAGGARD_ICON,
+  ROLE_MASTER_OF_WINDS,
   eventArt,
+  mapQuarter,
   treasureArt,
   valueIcon,
 } from './art.js';
@@ -42,13 +45,18 @@ test('every treasure card resolves to an existing master and w440 variant', () =
 });
 
 test('backs, role card, map and value icons exist', () => {
-  for (const a of [BACK_EVENTS, BACK_TREASURES, MASTER_OF_WINDS, MAP_TREASURE]) {
+  for (const a of [BACK_EVENTS, BACK_TREASURES, MASTER_OF_WINDS, ROLE_MASTER_OF_WINDS, MAP_TREASURE]) {
     assertOnDisk(a.png);
     assertOnDisk(a.webp);
   }
   for (const v of ['canons', 'voiles', 'sabres', 'pistolets'] as Value[]) {
     assertOnDisk(valueIcon(v));
   }
+  for (const c of ['HG', 'HD', 'BG', 'BD'] as const) {
+    assertOnDisk(mapQuarter(c).png);
+    assertOnDisk(mapQuarter(c).webp);
+  }
+  assertOnDisk(LAGGARD_ICON);
 });
 
 test('recruit mapping is keyed by granted value, not by role name', () => {
@@ -70,14 +78,13 @@ test('recruit mapping is keyed by granted value, not by role name', () => {
   assert.equal(eventArt(byKind('canonnier')).name, 'recruitment_gunner');
 });
 
-test('boarding profiles map to the 10 shared scenes (sailors=pistolets, officers=sabres, sails=voiles)', () => {
+test('boarding profiles map to the 9 one-on-one and 4 team scenes (sailors=pistolets, officers=sabres, sails=voiles)', () => {
   const cases: Array<[Value[], string]> = [
     [['canons', 'pistolets'], 'boarding_canons_sailors'],
     [['canons', 'sabres'], 'boarding_canons_officers'],
     [['voiles', 'pistolets'], 'boarding_sails_sailors'],
     [['sabres', 'pistolets'], 'boarding_officers_sailors'],
     [['sabres', 'voiles'], 'boarding_officers_sails'],
-    [['canons', 'voiles'], 'boarding_canons_sails'],
     [['canons', 'voiles', 'pistolets'], 'boarding_canons_sails_sailors'],
     [['canons', 'sabres', 'pistolets'], 'boarding_canons_officers_sailors'],
     [['canons', 'sabres', 'voiles'], 'boarding_canons_officers_sails'],
@@ -95,7 +102,16 @@ test('boarding profiles map to the 10 shared scenes (sailors=pistolets, officers
     profile: ['pistolets', 'canons', 'sabres'],
     bonusIcon: 'voiles',
   };
-  assert.equal(eventArt(swapped).name, 'boarding_canons_officers_sailors');
+  assert.equal(eventArt(swapped).name, 'boarding_team_canons_officers_sailors');
+  const team: Array<[Value[], string]> = [
+    [['canons', 'voiles'], 'boarding_team_canons_sails'],
+    [['canons', 'pistolets', 'voiles'], 'boarding_team_canons_sails_sailors'],
+    [['voiles', 'sabres'], 'boarding_team_officers_sails'],
+  ];
+  for (const [profile, expected] of team) {
+    const card: BoardingCard = { id: 't', type: 'boarding', mode: '2v2', profile, bonusIcon: 'canons' };
+    assert.equal(eventArt(card).name, expected, profile.join('+'));
+  }
 });
 
 test('raids map per bonus suit', () => {
@@ -130,6 +146,6 @@ test('curses, talismans and corners map per the handoff table', () => {
   assert.equal(treasureArt(talisman('contre-abordage', 'pistolets')).name, 'talisman_sailor_counter_boarding');
 
   for (const c of deck.filter((c) => c.type === 'corner')) {
-    assert.equal(treasureArt(c).name, 'map_treasure');
+    assert.equal(treasureArt(c).name, `corner_${c.corner.toLowerCase()}`);
   }
 });
